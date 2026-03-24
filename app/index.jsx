@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 
 const { width, height } = Dimensions.get('window');
 
@@ -46,6 +47,12 @@ export default function Index() {
   const buttonFontSize = isSmallDevice ? 14 : 16;
   const logoBorderRadius = isSmallDevice ? 16 : 22;
 
+  const bottomPadding = Platform.select({
+    ios: insets.bottom + (isSmallDevice ? 20 : 30),
+    android: insets.bottom + (isSmallDevice ? 24 : 40),
+    default: insets.bottom + 30,
+  });
+
   return (
     <View style={{ flex: 1, backgroundColor: '#2a0830' }}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
@@ -55,10 +62,12 @@ export default function Index() {
         locations={[0, 0.35, 0.65, 1]}
         start={{ x: 0.6, y: 0 }}
         end={{ x: 0.4, y: 1 }}
-        style={{ flex: 1 }}
+        style={{
+          flex: 1,
+          paddingTop: insets.top,
+          paddingBottom: bottomPadding,
+        }}
       >
-        <View style={{ height: insets.top || StatusBar.currentHeight || 0 }} />
-
         <View
           style={{
             flex: 1,
@@ -117,11 +126,11 @@ export default function Index() {
         <View
           style={{
             paddingHorizontal: width * 0.07,
-            paddingBottom: Math.max(insets.bottom, 20) + (isSmallDevice ? 16 : 32),
             gap: isSmallDevice ? 10 : 14,
           }}
         >
           <TouchableOpacity
+            onPress={() => router.push('/auth/login')}
             activeOpacity={0.9}
             style={{
               width: '100%',
@@ -149,7 +158,7 @@ export default function Index() {
               Sign In
             </Text>
           </TouchableOpacity>
-
+{/* 
           <TouchableOpacity
             activeOpacity={0.8}
             style={{
@@ -174,7 +183,7 @@ export default function Index() {
             >
               Create Account
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </LinearGradient>
     </View>

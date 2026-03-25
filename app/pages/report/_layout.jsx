@@ -1,10 +1,9 @@
 import { Stack } from "expo-router";
 
-export default function PagesLayout() {
+export default function ReportLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="details" />
-      <Stack.Screen name="report" />
+      <Stack.Screen name="[id]" />
     </Stack>
   );
 }

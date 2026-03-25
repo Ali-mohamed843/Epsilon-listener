@@ -95,10 +95,10 @@ export default function Login() {
   const labelSize = isSmallDevice ? 10 : 11;
 
   const handleSignIn = () => {
-    router.push('/tabs/home');
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
+      router.replace('/(tabs)');
     }, 2000);
   };
 

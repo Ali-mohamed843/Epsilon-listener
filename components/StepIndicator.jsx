@@ -3,12 +3,14 @@ import { View, Text, Dimensions } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
-export default function StepIndicator({ currentStep, isSmallDevice }) {
-  const steps = [
-    { number: 1, label: 'Details' },
-    { number: 2, label: 'Schedule' },
-    { number: 3, label: 'Pages' },
-  ];
+const defaultSteps = [
+  { number: 1, label: 'Details' },
+  { number: 2, label: 'Schedule' },
+  { number: 3, label: 'Pages' },
+];
+
+export default function StepIndicator({ currentStep, isSmallDevice, steps: customSteps }) {
+  const steps = customSteps || defaultSteps;
 
   return (
     <View className="flex-row items-center" style={{ paddingHorizontal: width * 0.06, paddingVertical: isSmallDevice ? 12 : 16 }}>
@@ -57,7 +59,15 @@ export default function StepIndicator({ currentStep, isSmallDevice }) {
                 </Text>
               )}
             </View>
-            <Text style={{ fontSize: 10, fontWeight: '600', letterSpacing: 0.3, color: isActive || isDone ? '#6e226e' : '#9e859e', textAlign: 'center' }}>
+            <Text
+              style={{
+                fontSize: 10,
+                fontWeight: '600',
+                letterSpacing: 0.3,
+                color: isActive || isDone ? '#6e226e' : '#9e859e',
+                textAlign: 'center',
+              }}
+            >
               {step.label}
             </Text>
           </View>

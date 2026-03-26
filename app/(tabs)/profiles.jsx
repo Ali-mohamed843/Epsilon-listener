@@ -7,7 +7,6 @@ import {
   TextInput,
   StatusBar,
   Dimensions,
-  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -106,7 +105,7 @@ const platformStyles = {
   twitter: { bg: '#e8f6ff', color: '#1da1f2', gradient: '#1da1f2', Badge: TwitterBadge },
 };
 
-const ProfileCard = ({ profile, isSmallDevice }) => {
+const ProfileCard = ({ profile, isSmallDevice, onEdit, onReport }) => {
   const [isChecked, setIsChecked] = useState(false);
   const style = platformStyles[profile.platform] || platformStyles.facebook;
   const BadgeIcon = style.Badge;
@@ -117,11 +116,34 @@ const ProfileCard = ({ profile, isSmallDevice }) => {
   const cardPadding = isSmallDevice ? 12 : 14;
 
   return (
-    <View className="bg-white mb-3 overflow-hidden" style={{ borderRadius: 18, shadowColor: 'rgba(110,34,110,0.06)', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 1, shadowRadius: 10, elevation: 3 }}>
-      <View className="flex-row items-center" style={{ padding: cardPadding, paddingBottom: cardPadding - 2, gap: 12 }}>
+    <View
+      className="bg-white mb-3 overflow-hidden"
+      style={{
+        borderRadius: 18,
+        shadowColor: 'rgba(110,34,110,0.06)',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 1,
+        shadowRadius: 10,
+        elevation: 3,
+      }}
+    >
+      {/* ── Top section ── */}
+      <View
+        className="flex-row items-center"
+        style={{ padding: cardPadding, paddingBottom: cardPadding - 2, gap: 12 }}
+      >
         <TouchableOpacity
           onPress={() => setIsChecked(!isChecked)}
-          style={{ width: 20, height: 20, borderWidth: 2, borderColor: isChecked ? '#6e226e' : '#ede4ed', borderRadius: 6, backgroundColor: isChecked ? '#6e226e' : 'transparent', alignItems: 'center', justifyContent: 'center' }}
+          style={{
+            width: 20,
+            height: 20,
+            borderWidth: 2,
+            borderColor: isChecked ? '#6e226e' : '#ede4ed',
+            borderRadius: 6,
+            backgroundColor: isChecked ? '#6e226e' : 'transparent',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
         >
           {isChecked && (
             <Svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
@@ -130,18 +152,48 @@ const ProfileCard = ({ profile, isSmallDevice }) => {
           )}
         </TouchableOpacity>
 
-        <View style={{ width: avatarSize, height: avatarSize, borderRadius: 14, backgroundColor: style.gradient, alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-          <Text className="text-white font-extrabold" style={{ fontSize: isSmallDevice ? 15 : 17 }}>{profile.name.charAt(0)}</Text>
-          <View className="absolute bg-white items-center justify-center" style={{ bottom: -4, right: -4, width: 18, height: 18, borderRadius: 9, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.15, shadowRadius: 4, elevation: 2 }}>
+        <View
+          style={{
+            width: avatarSize,
+            height: avatarSize,
+            borderRadius: 14,
+            backgroundColor: style.gradient,
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'relative',
+          }}
+        >
+          <Text className="text-white font-extrabold" style={{ fontSize: isSmallDevice ? 15 : 17 }}>
+            {profile.name.charAt(0)}
+          </Text>
+          <View
+            className="absolute bg-white items-center justify-center"
+            style={{
+              bottom: -4,
+              right: -4,
+              width: 18,
+              height: 18,
+              borderRadius: 9,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.15,
+              shadowRadius: 4,
+              elevation: 2,
+            }}
+          >
             <BadgeIcon />
           </View>
         </View>
 
         <View className="flex-1" style={{ minWidth: 0 }}>
-          <Text className="text-dark font-bold" style={{ fontSize: nameSize, marginBottom: 4 }} numberOfLines={1}>{profile.name}</Text>
+          <Text className="text-dark font-bold" style={{ fontSize: nameSize, marginBottom: 4 }} numberOfLines={1}>
+            {profile.name}
+          </Text>
           <View className="flex-row items-center flex-wrap" style={{ gap: 8 }}>
             <View style={{ backgroundColor: style.bg, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20 }}>
-              <Text style={{ fontSize: 10.5, fontWeight: '600', color: style.color }}>{profile.platform.charAt(0).toUpperCase() + profile.platform.slice(1)}</Text>
+              <Text style={{ fontSize: 10.5, fontWeight: '600', color: style.color }}>
+                {profile.platform.charAt(0).toUpperCase() + profile.platform.slice(1)}
+              </Text>
             </View>
             <View className="flex-row items-center" style={{ gap: 4 }}>
               <CalendarIcon />
@@ -151,25 +203,54 @@ const ProfileCard = ({ profile, isSmallDevice }) => {
         </View>
 
         <View className="bg-primary-xlight items-center" style={{ borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6 }}>
-          <Text className="text-primary font-extrabold" style={{ fontSize: 13, lineHeight: 13 }}>{profile.followers}</Text>
+          <Text className="text-primary font-extrabold" style={{ fontSize: 13, lineHeight: 13 }}>
+            {profile.followers}
+          </Text>
           <Text className="text-muted" style={{ fontSize: 10 }}>followers</Text>
         </View>
       </View>
 
-      <View className="flex-row items-center border-t border-border" style={{ padding: isSmallDevice ? 8 : 10, paddingHorizontal: 12, gap: 7 }}>
-        <TouchableOpacity activeOpacity={0.75} className="flex-1 flex-row items-center justify-center bg-dark" style={{ height: actionBtnHeight, borderRadius: 10, gap: 4 }}>
+      {/* ── Action buttons ── */}
+      <View
+        className="flex-row items-center border-t border-border"
+        style={{ padding: isSmallDevice ? 8 : 10, paddingHorizontal: 12, gap: 7 }}
+      >
+        {/* ✅ FIXED: uses onEdit callback with correct profile.id */}
+        <TouchableOpacity
+          onPress={() => onEdit(profile.id)}
+          activeOpacity={0.75}
+          className="flex-1 flex-row items-center justify-center bg-dark"
+          style={{ height: actionBtnHeight, borderRadius: 10, gap: 4 }}
+        >
           <EditIcon />
           <Text className="text-white font-bold" style={{ fontSize: 12 }}>Edit</Text>
         </TouchableOpacity>
-        <TouchableOpacity activeOpacity={0.75} className="flex-1 flex-row items-center justify-center bg-primary" style={{ height: actionBtnHeight, borderRadius: 10, gap: 4 }}>
+
+        {/* ✅ FIXED: uses onReport callback with correct profile.id */}
+        <TouchableOpacity
+          onPress={() => onReport(profile.id)}
+          activeOpacity={0.75}
+          className="flex-1 flex-row items-center justify-center bg-primary"
+          style={{ height: actionBtnHeight, borderRadius: 10, gap: 4 }}
+        >
           <ReportIcon />
           <Text className="text-white font-bold" style={{ fontSize: 12 }}>Report</Text>
         </TouchableOpacity>
-        <TouchableOpacity activeOpacity={0.75} className="flex-1 flex-row items-center justify-center bg-primary-xlight" style={{ height: actionBtnHeight, borderRadius: 10, gap: 4 }}>
+
+        <TouchableOpacity
+          activeOpacity={0.75}
+          className="flex-1 flex-row items-center justify-center bg-primary-xlight"
+          style={{ height: actionBtnHeight, borderRadius: 10, gap: 4 }}
+        >
           <RefreshIcon />
           <Text className="text-primary font-bold" style={{ fontSize: 12 }}>Update</Text>
         </TouchableOpacity>
-        <TouchableOpacity activeOpacity={0.75} className="items-center justify-center" style={{ width: actionBtnHeight, height: actionBtnHeight, borderRadius: 10, backgroundColor: '#fff0f3' }}>
+
+        <TouchableOpacity
+          activeOpacity={0.75}
+          className="items-center justify-center"
+          style={{ width: actionBtnHeight, height: actionBtnHeight, borderRadius: 10, backgroundColor: '#fff0f3' }}
+        >
           <DeleteIcon />
         </TouchableOpacity>
       </View>
@@ -179,6 +260,7 @@ const ProfileCard = ({ profile, isSmallDevice }) => {
 
 export default function ProfilesScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
 
   const isSmallDevice = height < 700;
@@ -196,38 +278,84 @@ export default function ProfilesScreen() {
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // ✅ Navigation handlers — single source of truth
+  const handleEdit = (profileId) => {
+    router.push(`/pages/edit-profile/${profileId}`);
+  };
+
+  const handleReport = (profileId) => {
+    router.push(`/pages/report-profile/${profileId}`);
+  };
+
   return (
     <View className="flex-1 bg-surface2">
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      <View className="bg-primary overflow-hidden" style={{ paddingTop: insets.top || StatusBar.currentHeight || 0, paddingBottom: isSmallDevice ? 20 : 24, paddingHorizontal: width * 0.06 }}>
-        <View className="absolute rounded-full" style={{ top: -50, right: -50, width: 160, height: 160, backgroundColor: 'rgba(255,255,255,0.06)' }} />
+      {/* ── Header ── */}
+      <View
+        className="bg-primary overflow-hidden"
+        style={{
+          paddingTop: insets.top || StatusBar.currentHeight || 0,
+          paddingBottom: isSmallDevice ? 20 : 24,
+          paddingHorizontal: width * 0.06,
+        }}
+      >
+        <View
+          className="absolute rounded-full"
+          style={{ top: -50, right: -50, width: 160, height: 160, backgroundColor: 'rgba(255,255,255,0.06)' }}
+        />
 
         <View className="flex-row items-center" style={{ marginTop: 8, gap: 12 }}>
-          <View className="items-center justify-center rounded-xl" style={{ width: logoIconSize, height: logoIconSize, backgroundColor: 'rgba(255,255,255,0.2)' }}>
+          <View
+            className="items-center justify-center rounded-xl"
+            style={{ width: logoIconSize, height: logoIconSize, backgroundColor: 'rgba(255,255,255,0.2)' }}
+          >
             <LogoIcon size={logoIconSize * 0.55} />
           </View>
           <View className="flex-1">
-            <Text className="uppercase" style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', letterSpacing: 1, marginBottom: 2 }}>Monitoring</Text>
-            <Text className="text-white font-extrabold" style={{ fontSize: headerTitleSize, letterSpacing: -0.4 }}>Profiles</Text>
+            <Text className="uppercase" style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', letterSpacing: 1, marginBottom: 2 }}>
+              Monitoring
+            </Text>
+            <Text className="text-white font-extrabold" style={{ fontSize: headerTitleSize, letterSpacing: -0.4 }}>
+              Profiles
+            </Text>
           </View>
-          <TouchableOpacity activeOpacity={0.9} className="flex-row items-center bg-white" style={{ paddingHorizontal: 16, paddingVertical: 9, borderRadius: 12, gap: 5 }}>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            className="flex-row items-center bg-white"
+            style={{ paddingHorizontal: 16, paddingVertical: 9, borderRadius: 12, gap: 5 }}
+          >
             <PlusIcon />
             <Text className="text-primary font-bold" style={{ fontSize: 13 }}>Create</Text>
           </TouchableOpacity>
         </View>
       </View>
 
+      {/* ── Search bar ── */}
       <View className="flex-row" style={{ paddingHorizontal: width * 0.05, paddingTop: 16, paddingBottom: 12, gap: 10 }}>
-        <View className="flex-1 flex-row items-center bg-white border border-border" style={{ height: searchHeight, borderRadius: 14, paddingHorizontal: 14, gap: 8 }}>
+        <View
+          className="flex-1 flex-row items-center bg-white border border-border"
+          style={{ height: searchHeight, borderRadius: 14, paddingHorizontal: 14, gap: 8 }}
+        >
           <SearchIcon />
-          <TextInput className="flex-1 text-dark" style={{ fontSize: 13.5 }} placeholder="Search profiles..." placeholderTextColor="#c8b2c8" value={searchQuery} onChangeText={setSearchQuery} />
+          <TextInput
+            className="flex-1 text-dark"
+            style={{ fontSize: 13.5 }}
+            placeholder="Search profiles..."
+            placeholderTextColor="#c8b2c8"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
         </View>
-        <TouchableOpacity className="items-center justify-center bg-primary-xlight" style={{ width: searchHeight, height: searchHeight, borderRadius: 14 }}>
+        <TouchableOpacity
+          className="items-center justify-center bg-primary-xlight"
+          style={{ width: searchHeight, height: searchHeight, borderRadius: 14 }}
+        >
           <FilterIcon />
         </TouchableOpacity>
       </View>
 
+      {/* ── Count row ── */}
       <View className="flex-row items-center justify-between" style={{ paddingHorizontal: width * 0.05, paddingBottom: 10 }}>
         <Text className="text-muted" style={{ fontSize: 12.5 }}>
           <Text className="text-primary font-bold">{filteredProfiles.length}</Text> profiles found
@@ -237,9 +365,20 @@ export default function ProfilesScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: width * 0.05, paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
+      {/* ── Profile cards list ── */}
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: width * 0.05, paddingBottom: 20 }}
+        showsVerticalScrollIndicator={false}
+      >
         {filteredProfiles.map((profile) => (
-          <ProfileCard key={profile.id} profile={profile} isSmallDevice={isSmallDevice} />
+          <ProfileCard
+            key={profile.id}
+            profile={profile}
+            isSmallDevice={isSmallDevice}
+            onEdit={handleEdit}
+            onReport={handleReport}
+          />
         ))}
       </ScrollView>
     </View>

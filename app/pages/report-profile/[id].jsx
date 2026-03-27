@@ -282,46 +282,13 @@ export default function ProfileReportScreen() {
         />
 
         <SectionTitle>Activity Over Time</SectionTitle>
-        <SimpleBarChart
-          title="Social Media Posts Per Day"
-          data={profilePostsData}
-          isSmallDevice={isSmallDevice}
-        />
-
-        <View className="flex-row" style={{ gap: 10 }}>
-          <View style={{ flex: 1 }}>
-            <SimpleBarChart title="Engagements" data={profileEngData} isSmallDevice={isSmallDevice} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <SimpleBarChart title="Views" data={profileViewsData} isSmallDevice={isSmallDevice} />
-          </View>
-        </View>
-
-        <View className="flex-row" style={{ gap: 10 }}>
-          <View style={{ flex: 1 }}>
-            <SimpleBarChart title="Likes" data={profileLikesData} isSmallDevice={isSmallDevice} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <SimpleBarChart title="Shares" data={profileSharesData} isSmallDevice={isSmallDevice} />
-          </View>
-        </View>
-
-        <View className="flex-row" style={{ gap: 10 }}>
-          <View style={{ flex: 1 }}>
-            <SimpleBarChart
-              title="Comments"
-              data={profileCommentsData}
-              isSmallDevice={isSmallDevice}
-            />
-          </View>
-          <View style={{ flex: 1 }}>
-            <SimpleBarChart
-              title="Avg Reach"
-              data={profileReachData}
-              isSmallDevice={isSmallDevice}
-            />
-          </View>
-        </View>
+        <SimpleBarChart title="Social Media Posts Per Day" data={profilePostsData} isSmallDevice={isSmallDevice} />
+        <SimpleBarChart title="Engagements Per Day" data={profileEngData} isSmallDevice={isSmallDevice} />
+        <SimpleBarChart title="Views Per Day" data={profileViewsData} isSmallDevice={isSmallDevice} />
+        <SimpleBarChart title="Likes Per Day" data={profileLikesData} isSmallDevice={isSmallDevice} />
+        <SimpleBarChart title="Shares Per Day" data={profileSharesData} isSmallDevice={isSmallDevice} />
+        <SimpleBarChart title="Comments Per Day" data={profileCommentsData} isSmallDevice={isSmallDevice} />
+        <SimpleBarChart title="Avg Reach Per Day" data={profileReachData} isSmallDevice={isSmallDevice} />
 
         <SectionTitle>Comments Sentiment Analysis</SectionTitle>
         <View className="flex-row" style={{ gap: 10, marginBottom: 10 }}>

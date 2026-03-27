@@ -30,13 +30,15 @@ const kpis = [
   { icon: <FileIcon />, label: 'Eng. Per Post', value: '95K', iconBg: '#f5f3ff' },
 ];
 
-const chartLabels = ['03', '05', '08', '10', '12', '15', '17', '19', '22', '24', '26', '28'];
+const chartLabels = ['01 Mar', '03 Mar', '05 Mar', '08 Mar', '10 Mar', '15 Mar', '17 Mar', '19 Mar', '22 Mar', '24 Mar', '26 Mar', '28 Mar'];
+
 const postsData = [42, 120, 95, 210, 180, 255, 170, 195, 148, 230, 160, 175].map((v, i) => ({ label: chartLabels[i], value: v }));
 const engData = [1.2, 5.6, 3.4, 18, 9.2, 22, 8.4, 11, 6.8, 15, 7.2, 8.9].map((v, i) => ({ label: chartLabels[i], value: v }));
 const viewsData = [0.8, 3.2, 1.9, 12, 5.5, 14, 6, 7.8, 4.2, 9.8, 4.9, 5.6].map((v, i) => ({ label: chartLabels[i], value: v }));
 const likesData = [0.95, 4.2, 2.6, 14, 7.1, 17.5, 6.4, 8.9, 5.1, 11.2, 5.8, 6.7].map((v, i) => ({ label: chartLabels[i], value: v }));
 const sharesData = [60, 280, 190, 820, 440, 960, 380, 510, 290, 680, 320, 410].map((v, i) => ({ label: chartLabels[i], value: v }));
 const commentsData = [190, 820, 560, 2100, 1400, 2800, 1100, 1600, 900, 1850, 980, 1200].map((v, i) => ({ label: chartLabels[i], value: v }));
+const reachData = [320, 1200, 890, 3400, 2100, 4500, 1800, 2600, 1400, 3200, 1600, 2000].map((v, i) => ({ label: chartLabels[i], value: v }));
 
 const positiveWords = ['رائع', 'ممتاز', 'مبادرة', 'تفاؤل', 'amazing', 'hope', 'progress', 'شكراً', 'green', 'نجاح'];
 const negativeWords = ['أزمة', 'تأخر', 'فشل', 'weak', 'delay', 'broken', 'ظلم', 'fake'];
@@ -135,34 +137,13 @@ export default function ReportScreen() {
         />
 
         <SectionTitle>Activity Over Time</SectionTitle>
-        <SimpleBarChart title="Posts Per Day" data={postsData} isSmallDevice={isSmallDevice} />
-
-        <View className="flex-row" style={{ gap: 10 }}>
-          <View style={{ flex: 1 }}>
-            <SimpleBarChart title="Engagements" data={engData} isSmallDevice={isSmallDevice} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <SimpleBarChart title="Views" data={viewsData} isSmallDevice={isSmallDevice} />
-          </View>
-        </View>
-
-        <View className="flex-row" style={{ gap: 10 }}>
-          <View style={{ flex: 1 }}>
-            <SimpleBarChart title="Likes" data={likesData} isSmallDevice={isSmallDevice} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <SimpleBarChart title="Shares" data={sharesData} isSmallDevice={isSmallDevice} />
-          </View>
-        </View>
-
-        <View className="flex-row" style={{ gap: 10 }}>
-          <View style={{ flex: 1 }}>
-            <SimpleBarChart title="Comments" data={commentsData} isSmallDevice={isSmallDevice} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <SimpleBarChart title="Avg Reach" data={commentsData} isSmallDevice={isSmallDevice} />
-          </View>
-        </View>
+        <SimpleBarChart title="Social Media Posts Per Day" data={postsData} isSmallDevice={isSmallDevice} />
+        <SimpleBarChart title="Engagements Per Day" data={engData} isSmallDevice={isSmallDevice} />
+        <SimpleBarChart title="Views Per Day" data={viewsData} isSmallDevice={isSmallDevice} />
+        <SimpleBarChart title="Likes Per Day" data={likesData} isSmallDevice={isSmallDevice} />
+        <SimpleBarChart title="Shares Per Day" data={sharesData} isSmallDevice={isSmallDevice} />
+        <SimpleBarChart title="Comments Per Day" data={commentsData} isSmallDevice={isSmallDevice} />
+        <SimpleBarChart title="Avg Reach Per Day" data={reachData} isSmallDevice={isSmallDevice} />
 
         <SectionTitle>Comments Sentiment</SectionTitle>
         <View className="flex-row" style={{ gap: 10, marginBottom: 10 }}>

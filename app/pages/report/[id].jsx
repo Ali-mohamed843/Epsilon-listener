@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StatusBar, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { BackIcon, MoreVerticalIcon, DownloadIcon, ShareIcon, CalendarIcon, BarChartIcon } from '../../../components/Icons';
 import { FilterChips, KpiCard, FindingsCard, SentimentWordCloud, DonutLegend, HashtagCloud, SectionTitle, SimpleBarChart, IntentCard } from '../../../components/ReportComponents';
 import { EyeIcon, UsersIcon, MonitorIcon, ActivityIcon, MessageIcon, ThumbsUpIcon, AtSignIcon, SmileIcon, FileIcon } from '../../../components/Icons';
+import AISummaryCard from '../../../components/AISummaryCard';
+import AIChatButton from '../../../components/AIChatButton';
+import AIChatModal from '../../../components/AIChatModal';
+import { generateReportSummary, chatWithReport } from '../../../services/aiService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -54,9 +58,39 @@ export default function ReportScreen() {
 
   const [sentimentFilter, setSentimentFilter] = useState('All');
   const [platformFilter, setPlatformFilter] = useState('All');
+  const [chatVisible, setChatVisible] = useState(false);
 
   const isSmallDevice = height < 700;
   const report = reportData[id] || reportData['1'];
+
+  const aiContextData = {
+    name: report.name,
+    dateRange: report.dateRange,
+    kpis: kpis.map((k) => ({ label: k.label, value: k.value })),
+    fakePercent: 14.2,
+    realPercent: 85.8,
+    totalAccounts: 342,
+    riskLevel: 'Medium',
+    commentsSentiment: { positive: '71.4', negative: '5.8', neutral: '22.8' },
+    postsSentiment: { positive: '9.6', negative: '3.1' },
+    positiveWords,
+    negativeWords,
+    hashtags,
+    platformMentions: [
+      { name: 'Facebook', value: '1,240' },
+      { name: 'Twitter', value: '1,680' },
+      { name: 'Youtube', value: '820' },
+      { name: 'Tiktok', value: '360' },
+    ],
+  };
+
+  const handleGenerateSummary = useCallback(async () => {
+    return generateReportSummary(aiContextData, 'keyword');
+  }, [id]);
+
+  const handleChatMessage = useCallback(async (chatHistory, userMessage) => {
+    return chatWithReport(aiContextData, 'keyword', chatHistory, userMessage);
+  }, [id]);
 
   return (
     <View className="flex-1 bg-surface2">
@@ -112,7 +146,9 @@ export default function ReportScreen() {
         </View>
       </View>
 
-      <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingBottom: 80 }} showsVerticalScrollIndicator={false}>
+        <AISummaryCard onGenerate={handleGenerateSummary} isSmallDevice={isSmallDevice} />
+
         <SectionTitle>Overview Metrics</SectionTitle>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
           {kpis.map((kpi, i) => (
@@ -216,6 +252,18 @@ export default function ReportScreen() {
           </View>
         </View>
       </ScrollView>
+
+      <AIChatButton
+        onPress={() => setChatVisible(true)}
+        bottom={Math.max(insets.bottom, 16) + 12}
+      />
+
+      <AIChatModal
+        visible={chatVisible}
+        onClose={() => setChatVisible(false)}
+        onSendMessage={handleChatMessage}
+        reportType="keyword"
+      />
     </View>
   );
 }

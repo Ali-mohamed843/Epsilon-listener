@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StatusBar, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -32,6 +32,10 @@ import {
   profilePositiveWords,
   profileNegativeWords,
 } from '../../../components/ProfileReportData';
+import AISummaryCard from '../../../components/AISummaryCard';
+import AIChatButton from '../../../components/AIChatButton';
+import AIChatModal from '../../../components/AIChatModal';
+import { generateReportSummary, chatWithReport } from '../../../services/aiService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -71,11 +75,35 @@ export default function ProfileReportScreen() {
   const { id } = useLocalSearchParams();
 
   const [sentimentFilter, setSentimentFilter] = useState('All');
+  const [chatVisible, setChatVisible] = useState(false);
 
   const isSmallDevice = height < 700;
   const report = profileReportDatabase[id] || profileReportDatabase['1'];
   const BadgeIcon = platformBadges[report.platform] || FacebookBadge;
   const avatarBg = platformGradients[report.platform] || '#1877f2';
+
+  const aiContextData = {
+    name: report.name,
+    platform: report.platform,
+    profileUrl: report.profileUrl,
+    dateRange: report.dateRange,
+    kpis: profileKpis.map((k) => ({ label: k.label, value: k.value })),
+    fakePercent: 0,
+    realPercent: 100,
+    totalAccounts: 0,
+    riskLevel: 'Low',
+    commentsSentiment: { positive: '60', negative: '0', neutral: '40' },
+    positiveWords: profilePositiveWords,
+    negativeWords: profileNegativeWords,
+  };
+
+  const handleGenerateSummary = useCallback(async () => {
+    return generateReportSummary(aiContextData, 'profile');
+  }, [id]);
+
+  const handleChatMessage = useCallback(async (chatHistory, userMessage) => {
+    return chatWithReport(aiContextData, 'profile', chatHistory, userMessage);
+  }, [id]);
 
   return (
     <View className="flex-1 bg-surface2">
@@ -239,9 +267,11 @@ export default function ProfileReportScreen() {
 
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 80 }}
         showsVerticalScrollIndicator={false}
       >
+        <AISummaryCard onGenerate={handleGenerateSummary} isSmallDevice={isSmallDevice} />
+
         <SectionTitle>Overview Metrics</SectionTitle>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
           {profileKpis.map((kpi, i) => (
@@ -317,6 +347,18 @@ export default function ProfileReportScreen() {
           ]}
         />
       </ScrollView>
+
+      <AIChatButton
+        onPress={() => setChatVisible(true)}
+        bottom={Math.max(insets.bottom, 16) + 12}
+      />
+
+      <AIChatModal
+        visible={chatVisible}
+        onClose={() => setChatVisible(false)}
+        onSendMessage={handleChatMessage}
+        reportType="profile"
+      />
     </View>
   );
 }

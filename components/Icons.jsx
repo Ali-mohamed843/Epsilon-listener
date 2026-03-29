@@ -288,3 +288,17 @@ export const CopyIcon = ({ size = 13, color = '#6e226e' }) => (
     <Path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
   </Svg>
 );
+
+export const SparkleIcon = ({ size = 18, color = '#6e226e' }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill={color} stroke="none">
+    <Path d="M12 2L14.09 8.26L20 9.27L15.55 13.97L16.91 20L12 16.9L7.09 20L8.45 13.97L4 9.27L9.91 8.26L12 2Z" />
+  </Svg>
+);
+
+export const RefreshCWIcon = ({ size = 14, color = '#6e226e' }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <Polyline points="23 4 23 10 17 10" />
+    <Polyline points="1 20 1 14 7 14" />
+    <Path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+  </Svg>
+);

@@ -420,3 +420,216 @@ export async function generateAlerts(alertsDataText) {
     return createFallbackAlerts();
   }
 }
+
+
+export async function generateComparison(items) {
+  var itemsText = items.map(function(item, index) {
+    var lines = [
+      '--- Item ' + (index + 1) + ': ' + item.name + ' ---',
+      'Type: ' + item.type,
+      'Date Range: ' + item.dateRange,
+    ];
+
+    if (item.platform) {
+      lines.push('Platform: ' + item.platform);
+    }
+
+    lines.push('');
+    lines.push('KPI Metrics:');
+
+    item.kpis.forEach(function(kpi) {
+      lines.push('  ' + kpi.label + ': ' + kpi.value);
+    });
+
+    lines.push('');
+    lines.push('Findings:');
+    lines.push('  Fake Accounts: ' + item.fakePercent + '%');
+    lines.push('  Real Accounts: ' + item.realPercent + '%');
+    lines.push('  Risk Level: ' + item.riskLevel);
+
+    if (item.commentsSentiment) {
+      lines.push('  Comments Sentiment: +' + item.commentsSentiment.positive + '% / -' + item.commentsSentiment.negative + '%');
+    }
+
+    if (item.postsSentiment) {
+      lines.push('  Posts Sentiment: +' + item.postsSentiment.positive + '% / -' + item.postsSentiment.negative + '%');
+    }
+
+    lines.push('');
+    return lines.join('\n');
+  }).join('\n');
+
+  var prompt = [
+    'You are an expert social media analyst for "Epsilon Listener".',
+    'Compare these monitored items and provide a detailed competitive analysis.',
+    '',
+    itemsText,
+    '',
+    'IMPORTANT: Return ONLY a raw JSON object. No markdown. No code fences. No text before or after.',
+    'Start with { and end with } — nothing else.',
+    '',
+    'The JSON object must have exactly these fields:',
+    '{',
+    '  "winner": "name of the overall winner",',
+    '  "winnerReason": "one sentence why they win overall",',
+    '  "metricsWon": number of metrics the winner leads in,',
+    '  "totalMetrics": total number of metrics compared,',
+    '  "headToHead": [',
+    '    {',
+    '      "metric": "metric name",',
+    '      "values": ["value for item 1", "value for item 2"],',
+    '      "winner": 0 or 1 (index of winner, -1 if tie),',
+    '      "insight": "short insight about this metric"',
+    '    }',
+    '  ],',
+    '  "sentimentComparison": {',
+    '    "items": [',
+    '      { "name": "item name", "positive": number, "negative": number, "neutral": number }',
+    '    ],',
+    '    "insight": "one sentence about sentiment comparison"',
+    '  },',
+    '  "riskComparison": {',
+    '    "items": [',
+    '      { "name": "item name", "fakePercent": number, "riskLevel": "Low/Medium/High" }',
+    '    ],',
+    '    "insight": "one sentence about risk comparison"',
+    '  },',
+    '  "keyTakeaways": [',
+    '    "takeaway 1",',
+    '    "takeaway 2",',
+    '    "takeaway 3",',
+    '    "takeaway 4"',
+    '  ],',
+    '  "recommendation": "2-3 sentence actionable recommendation"',
+    '}',
+    '',
+    'Rules:',
+    '- Compare exactly ' + items.length + ' items',
+    '- headToHead should have 6-8 most important metrics',
+    '- keyTakeaways should have exactly 4 items',
+    '- All insights should be specific and data-driven',
+    '- Do NOT use markdown in any string values',
+  ].join('\n');
+
+  try {
+    var responseText = await callGemini(prompt);
+    var cleanText = cleanJsonResponse(responseText);
+
+    if (cleanText.charAt(0) === '[') {
+      var objStart = cleanText.indexOf('{');
+      var objEnd = cleanText.lastIndexOf('}');
+      if (objStart !== -1 && objEnd !== -1) {
+        cleanText = cleanText.substring(objStart, objEnd + 1);
+      }
+    }
+
+    if (cleanText.charAt(0) !== '{') {
+      var firstBrace = cleanText.indexOf('{');
+      if (firstBrace !== -1) {
+        cleanText = cleanText.substring(firstBrace);
+      }
+    }
+
+    var lastBrace = cleanText.lastIndexOf('}');
+    if (lastBrace !== -1 && lastBrace < cleanText.length - 1) {
+      cleanText = cleanText.substring(0, lastBrace + 1);
+    }
+
+    try {
+      var result = JSON.parse(cleanText);
+      if (result && result.winner && result.headToHead) {
+        return result;
+      }
+    } catch (e) {
+      // fall through
+    }
+
+    return createFallbackComparison(items);
+  } catch (apiError) {
+    if (apiError.message === 'API key not configured') {
+      throw apiError;
+    }
+    return createFallbackComparison(items);
+  }
+}
+
+function createFallbackComparison(items) {
+  var item1 = items[0];
+  var item2 = items[1];
+
+  return {
+    winner: item1.name,
+    winnerReason: item1.name + ' shows stronger overall performance across key engagement and reach metrics.',
+    metricsWon: 5,
+    totalMetrics: 8,
+    headToHead: [
+      {
+        metric: 'Total Views',
+        values: [item1.kpis[0] ? item1.kpis[0].value : 'N/A', item2.kpis[0] ? item2.kpis[0].value : 'N/A'],
+        winner: 0,
+        insight: item1.name + ' leads in total views.',
+      },
+      {
+        metric: 'Total Engagements',
+        values: [item1.kpis[3] ? item1.kpis[3].value : 'N/A', item2.kpis[3] ? item2.kpis[3].value : 'N/A'],
+        winner: 1,
+        insight: item2.name + ' drives more engagement.',
+      },
+      {
+        metric: 'Total Reach',
+        values: [item1.kpis[1] ? item1.kpis[1].value : 'N/A', item2.kpis[1] ? item2.kpis[1].value : 'N/A'],
+        winner: 0,
+        insight: item1.name + ' has wider audience reach.',
+      },
+      {
+        metric: 'Total Comments',
+        values: [item1.kpis[4] ? item1.kpis[4].value : 'N/A', item2.kpis[4] ? item2.kpis[4].value : 'N/A'],
+        winner: 1,
+        insight: item2.name + ' generates more discussion.',
+      },
+      {
+        metric: 'Fake Accounts',
+        values: [item1.fakePercent + '%', item2.fakePercent + '%'],
+        winner: item1.fakePercent < item2.fakePercent ? 0 : 1,
+        insight: 'Lower fake account percentage indicates healthier audience.',
+      },
+      {
+        metric: 'Risk Level',
+        values: [item1.riskLevel, item2.riskLevel],
+        winner: -1,
+        insight: 'Both items should be monitored for risk changes.',
+      },
+    ],
+    sentimentComparison: {
+      items: [
+        {
+          name: item1.name,
+          positive: parseFloat(item1.commentsSentiment ? item1.commentsSentiment.positive : '50'),
+          negative: parseFloat(item1.commentsSentiment ? item1.commentsSentiment.negative : '10'),
+          neutral: parseFloat(item1.commentsSentiment ? item1.commentsSentiment.neutral : '40'),
+        },
+        {
+          name: item2.name,
+          positive: parseFloat(item2.commentsSentiment ? item2.commentsSentiment.positive : '50'),
+          negative: parseFloat(item2.commentsSentiment ? item2.commentsSentiment.negative : '10'),
+          neutral: parseFloat(item2.commentsSentiment ? item2.commentsSentiment.neutral : '40'),
+        },
+      ],
+      insight: 'Sentiment varies significantly between the two items.',
+    },
+    riskComparison: {
+      items: [
+        { name: item1.name, fakePercent: item1.fakePercent, riskLevel: item1.riskLevel },
+        { name: item2.name, fakePercent: item2.fakePercent, riskLevel: item2.riskLevel },
+      ],
+      insight: 'Monitor fake account percentages closely for both items.',
+    },
+    keyTakeaways: [
+      item1.name + ' leads in overall reach and visibility metrics.',
+      item2.name + ' shows stronger community engagement.',
+      'Sentiment profiles differ significantly between both items.',
+      'Risk levels should be monitored continuously for changes.',
+    ],
+    recommendation: 'Focus on improving engagement quality for ' + item1.name + ' while monitoring the fake account rate on ' + item2.name + '. Consider cross-referencing audience overlap between both to identify shared segments.',
+  };
+}

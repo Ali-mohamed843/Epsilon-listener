@@ -36,6 +36,13 @@ const BellDotIcon = ({ size = 18 }) => (
     <Circle cx={18} cy={4} r={3} fill="#e8365d" stroke="#e8365d" />
   </Svg>
 );
+const CompareIcon = ({ size = 18 }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <Line x1={18} y1={20} x2={18} y2={10} />
+    <Line x1={12} y1={20} x2={12} y2={4} />
+    <Line x1={6} y1={20} x2={6} y2={14} />
+  </Svg>
+);
 
 const FilterIcon = ({ size = 18, color = '#6e226e' }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
@@ -174,7 +181,7 @@ export default function KeywordsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const isSmallDevice = height < 700;
-  const headerTitleSize = isSmallDevice ? 20 : 22;
+  const headerTitleSize = isSmallDevice ? 12 : 16;
   const searchHeight = isSmallDevice ? 40 : 44;
   const logoIconSize = isSmallDevice ? 32 : 36;
 
@@ -215,6 +222,19 @@ export default function KeywordsScreen() {
             <Text className="uppercase" style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', letterSpacing: 1, marginBottom: 2 }}>Monitoring</Text>
             <Text className="text-white font-extrabold" style={{ fontSize: headerTitleSize, letterSpacing: -0.4 }}>Keywords</Text>
           </View>
+          <TouchableOpacity
+            onPress={function() { router.push('/pages/compare/'); }}
+            activeOpacity={0.8}
+            className="items-center justify-center"
+            style={{
+              width: 40,
+              height: 40,
+              backgroundColor: 'rgba(255,255,255,0.18)',
+              borderRadius: 12,
+            }}
+          >
+            <CompareIcon size={18} />
+          </TouchableOpacity>
           <TouchableOpacity
             onPress={function() { router.push('/pages/alerts/'); }}
             activeOpacity={0.8}

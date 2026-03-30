@@ -302,3 +302,60 @@ export const RefreshCWIcon = ({ size = 14, color = '#6e226e' }) => (
     <Path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
   </Svg>
 );
+
+export const AlertOctagonIcon = ({ size = 18, color = '#e8365d' }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <Path d="M7.86 2h8.28L22 7.86v8.28L16.14 22H7.86L2 16.14V7.86L7.86 2z" />
+    <Line x1={12} y1={8} x2={12} y2={12} />
+    <Line x1={12} y1={16} x2={12.01} y2={16} />
+  </Svg>
+);
+
+export const BellIcon = ({ size = 18, color = '#6e226e' }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <Path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+    <Path d="M13.73 21a2 2 0 0 1-3.46 0" />
+  </Svg>
+);
+
+export const TrendingUpIcon = ({ size = 18, color = '#00a878' }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <Polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+    <Polyline points="17 6 23 6 23 12" />
+  </Svg>
+);
+
+export const HashIcon = ({ size = 18, color = '#6e226e' }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <Line x1={4} y1={9} x2={20} y2={9} />
+    <Line x1={4} y1={15} x2={20} y2={15} />
+    <Line x1={10} y1={3} x2={8} y2={21} />
+    <Line x1={16} y1={3} x2={14} y2={21} />
+  </Svg>
+);
+
+export const ZapIcon = ({ size = 18, color = '#f59e0b' }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill={color} stroke={color} strokeWidth={1} strokeLinecap="round" strokeLinejoin="round">
+    <Path d="M13 2L3 14h9l-1 10 10-12h-9l1-10z" />
+  </Svg>
+);
+
+export const ShieldCheckIcon = ({ size = 18, color = '#00a878' }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <Path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    <Polyline points="9 12 11 14 15 10" />
+  </Svg>
+);
+
+export const ChevronRightIcon = ({ size = 16, color = '#9e859e' }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+    <Polyline points="9 18 15 12 9 6" />
+  </Svg>
+);
+
+export const XIcon = ({ size = 16, color = '#9e859e' }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.5} strokeLinecap="round">
+    <Line x1={18} y1={6} x2={6} y2={18} />
+    <Line x1={6} y1={6} x2={18} y2={18} />
+  </Svg>
+);

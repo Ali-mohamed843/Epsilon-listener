@@ -68,6 +68,14 @@ const RefreshIcon = ({ size = 13, color = '#6e226e' }) => (
   </Svg>
 );
 
+const BellDotIcon = ({ size = 18 }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <Path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+    <Path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    <Circle cx={18} cy={4} r={3} fill="#e8365d" stroke="#e8365d" />
+  </Svg>
+);
+
 const DeleteIcon = ({ size = 15, color = '#e8365d' }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
     <Polyline points="3 6 5 6 21 6" />
@@ -306,25 +314,27 @@ export default function ProfilesScreen() {
         />
 
         <View className="flex-row items-center" style={{ marginTop: 8, gap: 12 }}>
-          <View
-            className="items-center justify-center rounded-xl"
-            style={{ width: logoIconSize, height: logoIconSize, backgroundColor: 'rgba(255,255,255,0.2)' }}
-          >
+          <View className="items-center justify-center rounded-xl" style={{ width: logoIconSize, height: logoIconSize, backgroundColor: 'rgba(255,255,255,0.2)' }}>
             <LogoIcon size={logoIconSize * 0.55} />
           </View>
           <View className="flex-1">
-            <Text className="uppercase" style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', letterSpacing: 1, marginBottom: 2 }}>
-              Monitoring
-            </Text>
-            <Text className="text-white font-extrabold" style={{ fontSize: headerTitleSize, letterSpacing: -0.4 }}>
-              Profiles
-            </Text>
+            <Text className="uppercase" style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', letterSpacing: 1, marginBottom: 2 }}>Monitoring</Text>
+            <Text className="text-white font-extrabold" style={{ fontSize: headerTitleSize, letterSpacing: -0.4 }}>Profiles</Text>
           </View>
           <TouchableOpacity
-            activeOpacity={0.9}
-            className="flex-row items-center bg-white"
-            style={{ paddingHorizontal: 16, paddingVertical: 9, borderRadius: 12, gap: 5 }}
+            onPress={function() { router.push('/pages/alerts/'); }}
+            activeOpacity={0.8}
+            className="items-center justify-center"
+            style={{
+              width: 40,
+              height: 40,
+              backgroundColor: 'rgba(255,255,255,0.18)',
+              borderRadius: 12,
+            }}
           >
+            <BellDotIcon size={18} />
+          </TouchableOpacity>
+          <TouchableOpacity activeOpacity={0.9} className="flex-row items-center bg-white" style={{ paddingHorizontal: 16, paddingVertical: 9, borderRadius: 12, gap: 5 }}>
             <PlusIcon />
             <Text className="text-primary font-bold" style={{ fontSize: 13 }}>Create</Text>
           </TouchableOpacity>

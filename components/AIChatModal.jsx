@@ -210,9 +210,6 @@ const TypingIndicator = () => {
   );
 };
 
-// The vertical offset KAV needs = the top backdrop tap area height.
-// On Android we also subtract the status bar height because the Modal
-// sits below it but KAV calculates from the very top of the screen.
 const BACKDROP_RATIO = 0.12;
 const getKavOffset = () => {
   const backdropHeight = SCREEN_HEIGHT * BACKDROP_RATIO;
@@ -295,10 +292,6 @@ export default function AIChatModal({ visible, onClose, onSendMessage, reportTyp
     });
   };
 
-  // Bottom padding for the input bar:
-  // On iOS respect the safe-area bottom inset.
-  // On Android the inset is usually 0 even with gesture nav; add a fixed
-  // baseline so the bar never sits flush against the screen edge.
   const inputBarBottomPad =
     Platform.OS === 'ios'
       ? Math.max(insets.bottom, 16)
@@ -309,13 +302,9 @@ export default function AIChatModal({ visible, onClose, onSendMessage, reportTyp
       visible={visible}
       transparent
       animationType="none"
-      // 'soft-input' tells Android to resize the window when the keyboard
-      // appears (equivalent to windowSoftInputMode="adjustResize").
-      // Without this the keyboard overlaps the modal on many devices.
       statusBarTranslucent={Platform.OS === 'android'}
     >
       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }}>
-        {/* Backdrop tap area */}
         <TouchableOpacity
           style={{ height: SCREEN_HEIGHT * BACKDROP_RATIO }}
           activeOpacity={1}
@@ -332,19 +321,11 @@ export default function AIChatModal({ visible, onClose, onSendMessage, reportTyp
             overflow: 'hidden',
           }}
         >
-          {/*
-            KeyboardAvoidingView fix for Android:
-            - Use 'padding' on both platforms. 'height' on Android shrinks
-              the container which can collapse the ScrollView unpredictably.
-            - keyboardVerticalOffset tells KAV how much space sits above
-              the Animated.View so it can compute the correct padding amount.
-          */}
           <KeyboardAvoidingView
             style={{ flex: 1 }}
             behavior="padding"
             keyboardVerticalOffset={getKavOffset()}
           >
-            {/* ── Header ── */}
             <View
               style={{
                 flexDirection: 'row',
@@ -395,8 +376,6 @@ export default function AIChatModal({ visible, onClose, onSendMessage, reportTyp
                 <CloseIcon size={18} color="#6e226e" />
               </TouchableOpacity>
             </View>
-
-            {/* ── Messages ── */}
             <ScrollView
               ref={scrollRef}
               style={{ flex: 1 }}
@@ -407,8 +386,6 @@ export default function AIChatModal({ visible, onClose, onSendMessage, reportTyp
               }}
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
-              // Prevents the scroll view from stealing the keyboard dismiss
-              // gesture on Android, which can cause layout jumps.
               keyboardDismissMode="interactive"
             >
               {messages.length === 0 && !isTyping && (
@@ -498,15 +475,12 @@ export default function AIChatModal({ visible, onClose, onSendMessage, reportTyp
               {isTyping && <TypingIndicator />}
             </ScrollView>
 
-            {/* ── Input bar ── */}
             <View
               style={{
                 flexDirection: 'row',
                 alignItems: 'flex-end',
                 paddingHorizontal: 16,
                 paddingTop: 10,
-                // Use the safe-area-aware bottom padding so the bar is never
-                // hidden behind the home indicator (iOS) or nav bar (Android).
                 paddingBottom: inputBarBottomPad,
                 backgroundColor: '#fff',
                 borderTopWidth: 1,
@@ -522,8 +496,6 @@ export default function AIChatModal({ visible, onClose, onSendMessage, reportTyp
                   borderColor: '#ede4ed',
                   borderRadius: 14,
                   paddingHorizontal: 14,
-                  // Symmetric vertical padding keeps the text vertically centred
-                  // inside the input on both iOS and Android.
                   paddingVertical: 10,
                   maxHeight: 100,
                   justifyContent: 'center',
@@ -539,12 +511,8 @@ export default function AIChatModal({ visible, onClose, onSendMessage, reportTyp
                     fontSize: 14,
                     color: '#1a0a1a',
                     maxHeight: 80,
-                    // Prevent Android from adding extra internal padding that
-                    // shifts text upward inside the TextInput.
                     paddingTop: 0,
                     paddingBottom: 0,
-                    // Ensures text starts from the top of the input on Android
-                    // when multiline is true.
                     textAlignVertical: 'center',
                   }}
                   editable={!isTyping}

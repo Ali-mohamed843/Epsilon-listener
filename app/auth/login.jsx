@@ -10,68 +10,100 @@ import {
   Platform,
   KeyboardAvoidingView,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path, Rect, Circle, Polyline, Line } from 'react-native-svg';
+import { loginUser } from '../../api/loginApi';
 
 const { width, height } = Dimensions.get('window');
 
-const MailIcon = ({ size = 17, color = '#c8b2c8' }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round">
-    <Path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-    <Polyline points="22,6 12,13 2,6" />
-  </Svg>
-);
+const MailIcon = (props) => {
+  const size = props.size || 17;
+  const color = props.color || '#c8b2c8';
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round">
+      <Path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+      <Polyline points="22,6 12,13 2,6" />
+    </Svg>
+  );
+};
 
-const LockIcon = ({ size = 17, color = '#c8b2c8' }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round">
-    <Rect x={3} y={11} width={18} height={11} rx={2} ry={2} />
-    <Path d="M7 11V7a5 5 0 0 1 10 0v4" />
-  </Svg>
-);
+const LockIcon = (props) => {
+  const size = props.size || 17;
+  const color = props.color || '#c8b2c8';
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round">
+      <Rect x={3} y={11} width={18} height={11} rx={2} ry={2} />
+      <Path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </Svg>
+  );
+};
 
-const EyeIcon = ({ size = 17, color = '#9e859e' }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round">
-    <Path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-    <Circle cx={12} cy={12} r={3} />
-  </Svg>
-);
+const EyeIcon = (props) => {
+  const size = props.size || 17;
+  const color = props.color || '#9e859e';
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round">
+      <Path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <Circle cx={12} cy={12} r={3} />
+    </Svg>
+  );
+};
 
-const EyeOffIcon = ({ size = 17, color = '#9e859e' }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round">
-    <Path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-    <Path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-    <Line x1={1} y1={1} x2={23} y2={23} />
-  </Svg>
-);
+const EyeOffIcon = (props) => {
+  const size = props.size || 17;
+  const color = props.color || '#9e859e';
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round">
+      <Path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+      <Path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+      <Line x1={1} y1={1} x2={23} y2={23} />
+    </Svg>
+  );
+};
 
-const ArrowIcon = ({ size = 18, color = '#fff' }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.5} strokeLinecap="round">
-    <Line x1={5} y1={12} x2={19} y2={12} />
-    <Polyline points="12,5 19,12 12,19" />
-  </Svg>
-);
+const ArrowIcon = (props) => {
+  const size = props.size || 18;
+  const color = props.color || '#fff';
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.5} strokeLinecap="round">
+      <Line x1={5} y1={12} x2={19} y2={12} />
+      <Polyline points="12,5 19,12 12,19" />
+    </Svg>
+  );
+};
 
-const GoogleIcon = ({ size = 20 }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24">
-    <Path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-    <Path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-    <Path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-    <Path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-  </Svg>
-);
+const CheckIcon = (props) => {
+  const size = props.size || 18;
+  const color = props.color || '#fff';
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.5} strokeLinecap="round">
+      <Polyline points="20 6 9 17 4 12" />
+    </Svg>
+  );
+};
 
-const FacebookIcon = ({ size = 20 }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="#1877f2">
-    <Path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-  </Svg>
-);
+const AlertIcon = (props) => {
+  const size = props.size || 16;
+  const color = props.color || '#e8365d';
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round">
+      <Circle cx={12} cy={12} r={10} />
+      <Line x1={12} y1={8} x2={12} y2={12} />
+      <Line x1={12} y1={16} x2={12.01} y2={16} />
+    </Svg>
+  );
+};
 
-const LogoIcon = ({ size = 38 }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="#fff">
-    <Path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
-  </Svg>
-);
+const LogoIcon = (props) => {
+  const size = props.size || 38;
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="#fff">
+      <Path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
+    </Svg>
+  );
+};
 
 export default function Login() {
   const insets = useSafeAreaInsets();
@@ -79,6 +111,8 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState('');
 
   const isSmallDevice = height < 700;
   const isMediumDevice = height >= 700 && height < 850;
@@ -90,16 +124,80 @@ export default function Login() {
   const formHeadingSize = isSmallDevice ? 18 : isMediumDevice ? 20 : 22;
   const inputHeight = isSmallDevice ? 46 : isMediumDevice ? 50 : 52;
   const buttonHeight = isSmallDevice ? 46 : isMediumDevice ? 50 : 52;
-  const socialBtnHeight = isSmallDevice ? 42 : isMediumDevice ? 46 : 48;
   const inputFontSize = isSmallDevice ? 14 : 15;
   const labelSize = isSmallDevice ? 10 : 11;
 
-  const handleSignIn = () => {
+  const validateEmail = (emailText) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(emailText);
+  };
+
+  const handleSignIn = async () => {
+    setError('');
+
+    if (!email.trim()) {
+      setError('Please enter your email address');
+      return;
+    }
+
+    if (!password) {
+      setError('Please enter your password');
+      return;
+    }
+
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+
+    const result = await loginUser({ email: email.trim(), password });
+
+    if (result.success) {
       router.replace('/(tabs)');
-    }, 2000);
+    } else {
+      setError(result.message || 'Login failed. Please try again.');
+      setIsLoading(false);
+    }
+  };
+
+  const getButtonStyle = () => {
+    if (isSuccess) return '#00a878';
+    if (isLoading) return '#9b3d9b';
+    return '#6e226e';
+  };
+
+  const getButtonText = () => {
+    if (isSuccess) return 'Welcome back!';
+    if (isLoading) return 'Signing in...';
+    return 'Sign In';
+  };
+
+  const renderButtonContent = () => {
+    if (isSuccess) {
+      return (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Text className="text-white font-extrabold text-base">{getButtonText()}</Text>
+          <CheckIcon />
+        </View>
+      );
+    }
+
+    if (isLoading) {
+      return (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <ActivityIndicator size="small" color="#fff" />
+          <Text className="text-white font-extrabold text-base">{getButtonText()}</Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <Text className="text-white font-extrabold text-base">{getButtonText()}</Text>
+        <ArrowIcon />
+      </View>
+    );
+  };
+
+  const clearError = () => {
+    if (error) setError('');
   };
 
   return (
@@ -126,39 +224,18 @@ export default function Login() {
           >
             <View
               className="absolute rounded-full"
-              style={{
-                top: -80,
-                right: -80,
-                width: 260,
-                height: 260,
-                backgroundColor: 'rgba(255,255,255,0.07)',
-              }}
+              style={{ top: -80, right: -80, width: 260, height: 260, backgroundColor: 'rgba(255,255,255,0.07)' }}
             />
             <View
               className="absolute rounded-full"
-              style={{
-                bottom: -60,
-                left: -60,
-                width: 200,
-                height: 200,
-                backgroundColor: 'rgba(255,255,255,0.05)',
-              }}
+              style={{ bottom: -60, left: -60, width: 200, height: 200, backgroundColor: 'rgba(255,255,255,0.05)' }}
             />
             <View
               className="absolute rounded-full"
-              style={{
-                top: 30 + (insets.top || 0),
-                left: 30,
-                width: 100,
-                height: 100,
-                backgroundColor: 'rgba(255,255,255,0.04)',
-              }}
+              style={{ top: 30 + (insets.top || 0), left: 30, width: 100, height: 100, backgroundColor: 'rgba(255,255,255,0.04)' }}
             />
 
-            <View
-              className="flex-1 items-center justify-center"
-              style={{ paddingHorizontal: width * 0.08 }}
-            >
+            <View className="flex-1 items-center justify-center" style={{ paddingHorizontal: width * 0.08 }}>
               <View
                 className="items-center justify-center rounded-2xl"
                 style={{
@@ -175,11 +252,7 @@ export default function Login() {
 
               <Text
                 className="text-white font-extrabold"
-                style={{
-                  fontSize: heroTitleSize,
-                  letterSpacing: -0.5,
-                  marginBottom: 6,
-                }}
+                style={{ fontSize: heroTitleSize, letterSpacing: -0.5, marginBottom: 6 }}
               >
                 epsilon
               </Text>
@@ -214,109 +287,123 @@ export default function Login() {
           >
             <Text
               className="text-dark font-extrabold"
-              style={{
-                fontSize: formHeadingSize,
-                letterSpacing: -0.3,
-                marginBottom: 4,
-              }}
+              style={{ fontSize: formHeadingSize, letterSpacing: -0.3, marginBottom: 4 }}
             >
               Welcome back 👋
             </Text>
 
             <Text
               className="text-muted"
-              style={{
-                fontSize: isSmallDevice ? 12.5 : 13.5,
-                marginBottom: isSmallDevice ? 18 : 24,
-                lineHeight: 20,
-              }}
+              style={{ fontSize: isSmallDevice ? 12.5 : 13.5, marginBottom: isSmallDevice ? 18 : 24, lineHeight: 20 }}
             >
               Sign in to your account to continue
             </Text>
 
+            {error !== '' && (
+              <View
+                style={{
+                  backgroundColor: '#fff0f3',
+                  borderRadius: 12,
+                  padding: 12,
+                  paddingHorizontal: 14,
+                  marginBottom: 16,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 10,
+                  borderWidth: 1,
+                  borderColor: '#ffd0db',
+                }}
+              >
+                <AlertIcon />
+                <Text style={{ flex: 1, fontSize: 13, color: '#e8365d', lineHeight: 18 }}>{error}</Text>
+              </View>
+            )}
+
             <Text
               className="text-muted font-bold uppercase"
-              style={{
-                fontSize: labelSize,
-                letterSpacing: 1,
-                marginBottom: 7,
-              }}
+              style={{ fontSize: labelSize, letterSpacing: 1, marginBottom: 7 }}
             >
               Email Address
             </Text>
             <View
-              className="flex-row items-center bg-surface2 border-border px-3.5"
               style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: '#faf5fa',
                 borderWidth: 1.5,
+                borderColor: error && !email.trim() ? '#e8365d' : '#ede4ed',
                 borderRadius: 14,
                 height: inputHeight,
+                paddingHorizontal: 14,
                 marginBottom: 16,
               }}
             >
-              <MailIcon />
+              <MailIcon color={error && !email.trim() ? '#e8365d' : '#c8b2c8'} />
               <TextInput
-                className="flex-1 text-dark ml-3"
-                style={{ fontSize: inputFontSize }}
+                className="flex-1 text-dark"
+                style={{ fontSize: inputFontSize, marginLeft: 12 }}
                 placeholder="you@example.com"
                 placeholderTextColor="#c8b2c8"
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(text) => { setEmail(text); clearError(); }}
+                editable={!isLoading && !isSuccess}
               />
             </View>
 
             <Text
               className="text-muted font-bold uppercase"
-              style={{
-                fontSize: labelSize,
-                letterSpacing: 1,
-                marginBottom: 7,
-              }}
+              style={{ fontSize: labelSize, letterSpacing: 1, marginBottom: 7 }}
             >
               Password
             </Text>
             <View
-              className="flex-row items-center bg-surface2 border-border px-3.5"
               style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: '#faf5fa',
                 borderWidth: 1.5,
+                borderColor: error && !password ? '#e8365d' : '#ede4ed',
                 borderRadius: 14,
                 height: inputHeight,
+                paddingHorizontal: 14,
                 marginBottom: 8,
               }}
             >
-              <LockIcon />
+              <LockIcon color={error && !password ? '#e8365d' : '#c8b2c8'} />
               <TextInput
-                className="flex-1 text-dark ml-3"
-                style={{ fontSize: inputFontSize }}
+                className="flex-1 text-dark"
+                style={{ fontSize: inputFontSize, marginLeft: 12 }}
                 placeholder="Enter your password"
                 placeholderTextColor="#c8b2c8"
                 secureTextEntry={!showPassword}
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text) => { setPassword(text); clearError(); }}
+                editable={!isLoading && !isSuccess}
               />
               <TouchableOpacity
                 onPress={() => setShowPassword(!showPassword)}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                disabled={isLoading || isSuccess}
               >
                 {showPassword ? <EyeOffIcon /> : <EyeIcon />}
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity className="self-end mb-4">
-              <Text className="text-primary font-semibold text-[13px]">
-                Forgot password?
-              </Text>
+            <TouchableOpacity className="self-end mb-4" disabled={isLoading || isSuccess}>
+              <Text className="text-primary font-semibold text-[13px]">Forgot password?</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               activeOpacity={0.88}
               onPress={handleSignIn}
+              disabled={isLoading || isSuccess}
               className="w-full flex-row items-center justify-center rounded-2xl"
               style={{
                 height: buttonHeight,
-                backgroundColor: isLoading ? '#00a878' : '#6e226e',
+                backgroundColor: getButtonStyle(),
                 gap: 8,
                 shadowColor: '#6e226e',
                 shadowOffset: { width: 0, height: 8 },
@@ -324,32 +411,13 @@ export default function Login() {
                 shadowRadius: 24,
                 elevation: 8,
                 marginBottom: isSmallDevice ? 16 : 20,
+                opacity: isLoading && !isSuccess ? 0.9 : 1,
               }}
             >
-              <Text className="text-white font-extrabold text-base">
-                {isLoading ? 'Welcome back!' : 'Sign In'}
-              </Text>
-              <ArrowIcon />
+              {renderButtonContent()}
             </TouchableOpacity>
 
-            <View
-              className="flex-row items-center"
-              style={{
-                marginBottom: isSmallDevice ? 16 : 20,
-                gap: 12,
-              }}
-            />
-
-            <View className="flex-row justify-center items-center">
-              <Text className="text-muted text-[13.5px]">
-                Don't have an account?{' '}
-              </Text>
-              <TouchableOpacity>
-                <Text className="text-primary font-bold text-[13.5px]">
-                  Sign Up
-                </Text>
-              </TouchableOpacity>
-            </View>
+            <View className="flex-row items-center" style={{ marginBottom: isSmallDevice ? 16 : 20, gap: 12 }} />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

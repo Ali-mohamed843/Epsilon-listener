@@ -1,20 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Modal, Pressable, StatusBar, Platform, ToastAndroid, Alert, Clipboard, Dimensions } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Modal, Pressable, StatusBar, Platform, ToastAndroid, Alert, Clipboard, Dimensions, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { BackIcon, PlusIcon, EditPencilIcon, DeleteIcon, CheckIcon, ChevronDownIcon, CopyIcon } from '../../components/Icons';
+import { fetchDashboards } from '../../api/dashboardApi';
 
 const { height } = Dimensions.get('window');
 
 const KEYWORD_OPTIONS = ['Climate Summit 2026', 'Tech Layoffs Wave', 'Water Crisis MENA', 'Gaza Ceasefire Talks'];
 const PROFILE_OPTIONS = ['NileSoft Solutions – FB 2026', 'Desert Wind Media – IG', 'Apex News Network – Twitter', 'Green Future Channel – YT'];
 const GROUP_OPTIONS = ['Climate Summit 2026 (keyword)', 'Tech Layoffs Wave (keyword)', 'NileSoft Solutions – FB (profile)', 'Desert Wind Media – IG (profile)'];
-
-const INITIAL_DASHBOARDS = [
-  { id: '1', name: 'Lorem ipsum dolor sit amet, consectetur adipisicing.', link: 'https://epsilon.io/d/lorem-ipsum', keywords: ['Lorem ipsum dolor sit.', 'lorem', 'ipsum', 'dolor', 'sit', 'amet'] },
-  { id: '2', name: 'Nile Basin Water Crisis Monitor', link: 'https://epsilon.io/d/water-crisis-nile', keywords: ['Water Crisis MENA', 'Nile Basin', 'drought', 'irrigation'] },
-  { id: '3', name: 'Tech Layoffs Regional Tracker', link: 'https://epsilon.io/d/tech-layoffs-2026', keywords: ['Tech Layoffs Wave', 'MENA tech', 'startup funding'] },
-];
 
 function toast(msg) {
   Platform.OS === 'android' ? ToastAndroid.show(msg, ToastAndroid.SHORT) : Alert.alert('', msg);
@@ -109,10 +104,9 @@ function DashboardCard({ item, onEdit, onDelete }) {
           </TouchableOpacity>
         </View>
         <Text className="text-[12px] text-[#9e859e] leading-[18px]" numberOfLines={2}>
-          {item.keywords.slice(0, 2).map((kw, i) => (
+          {item.keywords.length > 0 ? item.keywords.slice(0, 2).map((kw, i) => (
             <Text key={i}><Text className="text-[#1a0a1a] font-medium">{kw}</Text>{i < 1 ? ', ' : ''}</Text>
-          ))}
-          {item.keywords.length > 2 && <Text>{', ' + item.keywords.slice(2).join(', ')}</Text>}
+          )) : <Text className="text-[#c8b2c8]">No keywords assigned</Text>}
         </Text>
       </View>
       <View className="border-t border-[#ede4ed] px-3 py-2 flex-row justify-end gap-2">
@@ -139,14 +133,19 @@ function DashboardModal({ visible, mode, initialData, onClose, onSave }) {
   useEffect(() => {
     if (visible) {
       setName(initialData?.name || '');
-      setSgMode('single'); setPkMode('keyword');
-      setSingleValue(''); setGroups([{ id: Date.now(), name: '', selection: '' }]);
+      setSgMode('single'); 
+      setPkMode('keyword');
+      setSingleValue(''); 
+      setGroups([{ id: Date.now(), name: '', selection: '' }]);
       setNameError(false);
     }
   }, [visible]);
 
   const handleSave = () => {
-    if (!name.trim()) { setNameError(true); return; }
+    if (!name.trim()) { 
+      setNameError(true); 
+      return; 
+    }
     onSave({ name: name.trim() });
     toast(mode === 'edit' ? 'Dashboard updated!' : 'Dashboard created!');
     onClose();
@@ -162,7 +161,6 @@ function DashboardModal({ visible, mode, initialData, onClose, onSave }) {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-
             <Text className="font-extrabold text-[20px] text-[#1a0a1a] text-center mb-6">
               {mode === 'edit' ? 'Edit Dashboard' : 'Add Dashboard'}
             </Text>
@@ -243,19 +241,56 @@ export default function ExternalDashboardsScreen() {
   const router = useRouter();
   const isSmallDevice = height < 700;
 
-  const [dashboards, setDashboards] = useState(INITIAL_DASHBOARDS);
+  const [dashboards, setDashboards] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMode, setModalMode] = useState('add');
   const [editingItem, setEditingItem] = useState(null);
 
-  const openAdd = () => { setModalMode('add'); setEditingItem(null); setModalVisible(true); };
-  const openEdit = (item) => { setModalMode('edit'); setEditingItem(item); setModalVisible(true); };
-  const handleDelete = (id) => setDashboards(prev => prev.filter(d => d.id !== id));
+  const loadDashboards = useCallback(async () => {
+    setIsLoading(true);
+    setError('');
+    const result = await fetchDashboards();
+    if (result.success) {
+      setDashboards(result.data);
+    } else {
+      setError(result.message || 'Failed to load dashboards');
+    }
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    loadDashboards();
+  }, [loadDashboards]);
+
+  const openAdd = () => { 
+    setModalMode('add'); 
+    setEditingItem(null); 
+    setModalVisible(true); 
+  };
+  
+  const openEdit = (item) => { 
+    setModalMode('edit'); 
+    setEditingItem(item); 
+    setModalVisible(true); 
+  };
+  
+  const handleDelete = (id) => {
+    setDashboards(prev => prev.filter(d => d.id !== id));
+    toast('Dashboard deleted');
+  };
+
   const handleSave = ({ name }) => {
     if (modalMode === 'edit') {
       setDashboards(prev => prev.map(d => d.id === editingItem.id ? { ...d, name } : d));
     } else {
-      setDashboards(prev => [...prev, { id: String(Date.now()), name, link: `https://epsilon.io/d/${name.toLowerCase().replace(/\s+/g, '-')}`, keywords: [] }]);
+      setDashboards(prev => [...prev, { 
+        id: String(Date.now()), 
+        name, 
+        link: `https://epsilon.io/d/new-${name.toLowerCase().replace(/\s+/g, '-')}`, 
+        keywords: [] 
+      }]);
     }
   };
 
@@ -295,8 +330,20 @@ export default function ExternalDashboardsScreen() {
         </Text>
       </View>
 
-      <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingBottom: 32 }} showsVerticalScrollIndicator={false}>
-        {dashboards.length === 0 ? (
+      <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingBottom: 32, flexGrow: isLoading || error ? 1 : 0 }} showsVerticalScrollIndicator={false}>
+        {isLoading ? (
+          <View className="flex-1 justify-center items-center py-10">
+            <ActivityIndicator size="large" color="#6e226e" />
+            <Text className="text-[#9e859e] mt-3">Loading dashboards...</Text>
+          </View>
+        ) : error ? (
+          <View className="flex-1 justify-center items-center py-10">
+            <Text className="text-[#e8365d] text-center mb-3">{error}</Text>
+            <TouchableOpacity onPress={loadDashboards} className="bg-[#6e226e] px-5 py-2.5 rounded-xl">
+              <Text className="text-white font-bold">Retry</Text>
+            </TouchableOpacity>
+          </View>
+        ) : dashboards.length === 0 ? (
           <Text className="text-center text-[#9e859e] text-[14px] mt-16">No dashboards yet.{'\n'}Tap Create to add one.</Text>
         ) : (
           dashboards.map(item => <DashboardCard key={item.id} item={item} onEdit={openEdit} onDelete={handleDelete} />)

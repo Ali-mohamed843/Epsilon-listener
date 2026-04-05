@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,12 +8,45 @@ import {
   StatusBar,
   Dimensions,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter, router } from 'expo-router';
+import { useRouter } from 'expo-router';
 import Svg, { Path, Rect, Line, Circle, Polyline } from 'react-native-svg';
+import { fetchKeywords } from '../../api/keywordApi';
 
 const { width, height } = Dimensions.get('window');
+
+const formatShowForUI = (show) => {
+  const platforms = [];
+  const autoFetch = show.autoFetch || {};
+  if (autoFetch.twitter) platforms.push('Twitter');
+  if (autoFetch.facebook) platforms.push('Facebook');
+  if (autoFetch.instagram) platforms.push('Instagram');
+  if (autoFetch.youtube) platforms.push('YouTube');
+  if (autoFetch.tiktok) platforms.push('TikTok');
+  if (autoFetch.linkedin) platforms.push('LinkedIn');
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const startDate = formatDate(show.start_date);
+  const endDate = show.end_date ? new Date(show.end_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '';
+  const dateRange = startDate && endDate ? `${startDate} – ${endDate}` : 'No date set';
+
+  return {
+    id: show.id,
+    name: show.name,
+    platforms: platforms.length > 0 ? platforms : ['All Platforms'],
+    dateRange,
+    status: show.status?.toLowerCase() || 'pending',
+    mentions: show.mentions || '0',
+    hash: show.hash?.hash, // Ensure hash is extracted
+  };
+};
 
 const PlusIcon = ({ size = 14, color = '#6e226e' }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.5} strokeLinecap="round">
@@ -36,6 +69,7 @@ const BellDotIcon = ({ size = 18 }) => (
     <Circle cx={18} cy={4} r={3} fill="#e8365d" stroke="#e8365d" />
   </Svg>
 );
+
 const CompareIcon = ({ size = 18 }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
     <Line x1={18} y1={20} x2={18} y2={10} />
@@ -109,6 +143,7 @@ const KeywordCard = ({ keyword, isSmallDevice, onEdit }) => {
       case 'live': return { bg: '#e6f9f4', color: '#00a878' };
       case 'updating': return { bg: '#fff7e0', color: '#d48a00' };
       case 'done': return { bg: '#f0f0f0', color: '#777' };
+      case 'pending': return { bg: '#fff0f3', color: '#e8365d' };
       default: return { bg: '#f0f0f0', color: '#777' };
     }
   };
@@ -155,14 +190,18 @@ const KeywordCard = ({ keyword, isSmallDevice, onEdit }) => {
       </View>
 
       <View className="flex-row items-center border-t border-border" style={{ padding: isSmallDevice ? 8 : 10, paddingHorizontal: 12, gap: 7 }}>
+        {/* Edit uses ID */}
         <TouchableOpacity activeOpacity={0.75} onPress={() => onEdit(keyword.id)} className="flex-1 flex-row items-center justify-center bg-dark" style={{ height: actionBtnHeight, borderRadius: 10, gap: 4 }}>
           <EditIcon />
           <Text className="text-white font-bold" style={{ fontSize: 12 }}>Edit</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push(`/pages/report/${keyword.id}`)} activeOpacity={0.75} className="flex-1 flex-row items-center justify-center bg-primary" style={{ height: actionBtnHeight, borderRadius: 10, gap: 4 }}>
+
+        {/* Report uses HASH */}
+        <TouchableOpacity onPress={() => router.push(`/pages/report/${keyword.hash}`)} activeOpacity={0.75} className="flex-1 flex-row items-center justify-center bg-primary" style={{ height: actionBtnHeight, borderRadius: 10, gap: 4 }}>
           <ReportIcon />
           <Text className="text-white font-bold" style={{ fontSize: 12 }}>Report</Text>
         </TouchableOpacity>
+
         <TouchableOpacity activeOpacity={0.75} className="flex-1 flex-row items-center justify-center bg-primary-xlight" style={{ height: actionBtnHeight, borderRadius: 10, gap: 4 }}>
           <RefreshIcon />
           <Text className="text-primary font-bold" style={{ fontSize: 12 }}>Update</Text>
@@ -179,18 +218,31 @@ export default function KeywordsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const [keywords, setKeywords] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const isSmallDevice = height < 700;
   const headerTitleSize = isSmallDevice ? 12 : 16;
   const searchHeight = isSmallDevice ? 40 : 44;
   const logoIconSize = isSmallDevice ? 32 : 36;
 
-  const keywords = [
-    { id: 1, name: 'Climate Summit 2026', platforms: ['Twitter', 'Instagram'], dateRange: '01 Mar – 31 Mar 2026', status: 'live' },
-    { id: 2, name: 'Tech Layoffs Wave', platforms: ['Twitter', 'LinkedIn'], dateRange: '15 Feb – 15 Mar 2026', status: 'updating' },
-    { id: 3, name: 'Renewable Energy Egypt', platforms: ['Facebook', 'Youtube'], dateRange: '01 Jan – 28 Feb 2026', status: 'done' },
-    { id: 4, name: 'Gaza Ceasefire Talks', platforms: ['Twitter', 'Tiktok', 'Snapchat'], dateRange: '10 Mar – 17 Mar 2026', status: 'live' },
-  ];
+  const loadKeywords = useCallback(async () => {
+    setIsLoading(true);
+    setError('');
+    const result = await fetchKeywords(1, 50, '');
+    if (result.success) {
+      const formatted = result.data.shows.map(formatShowForUI);
+      setKeywords(formatted);
+    } else {
+      setError(result.message || 'Failed to load keywords');
+    }
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    loadKeywords();
+  }, [loadKeywords]);
 
   const filteredKeywords = keywords.filter((kw) =>
     kw.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -267,17 +319,35 @@ export default function KeywordsScreen() {
 
       <View className="flex-row items-center justify-between" style={{ paddingHorizontal: width * 0.05, paddingBottom: 10 }}>
         <Text className="text-muted" style={{ fontSize: 12.5 }}>
-          <Text className="text-primary font-bold">{filteredKeywords.length}</Text> keywords found
+          <Text className="text-primary font-bold">{isLoading ? '...' : filteredKeywords.length}</Text> keywords found
         </Text>
         <TouchableOpacity>
           <Text className="text-primary font-medium" style={{ fontSize: 12.5 }}>Select all</Text>
         </TouchableOpacity>
       </View>
 
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: width * 0.05, paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
-        {filteredKeywords.map((keyword) => (
-          <KeywordCard key={keyword.id} keyword={keyword} isSmallDevice={isSmallDevice} onEdit={handleEditKeyword} />
-        ))}
+      <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: width * 0.05, paddingBottom: 20, flexGrow: isLoading ? 1 : 0 }} showsVerticalScrollIndicator={false}>
+        {isLoading ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 }}>
+            <ActivityIndicator size="large" color="#6e226e" />
+            <Text style={{ marginTop: 12, color: '#9e859e', fontSize: 13 }}>Loading keywords...</Text>
+          </View>
+        ) : error ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 }}>
+            <Text style={{ color: '#e8365d', fontSize: 14, textAlign: 'center', marginBottom: 12 }}>{error}</Text>
+            <TouchableOpacity onPress={loadKeywords} style={{ backgroundColor: '#6e226e', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10 }}>
+              <Text style={{ color: '#fff', fontWeight: '700', fontSize: 13 }}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        ) : filteredKeywords.length === 0 ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 }}>
+            <Text style={{ color: '#9e859e', fontSize: 14 }}>No keywords found</Text>
+          </View>
+        ) : (
+          filteredKeywords.map((keyword) => (
+            <KeywordCard key={keyword.id} keyword={keyword} isSmallDevice={isSmallDevice} onEdit={handleEditKeyword} />
+          ))
+        )}
       </ScrollView>
     </View>
   );

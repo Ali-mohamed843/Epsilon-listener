@@ -1,3 +1,4 @@
+// components/ReportComponents
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 

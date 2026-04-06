@@ -1,5 +1,4 @@
-// components/ReportComponents
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 
 const { width } = Dimensions.get('window');
@@ -150,24 +149,67 @@ export const SectionTitle = ({ children, badge, badgeBg, badgeColor }) => (
 );
 
 export const SimpleBarChart = ({ title, data, isSmallDevice }) => {
-  const maxVal = Math.max(...data.map(d => d.value));
+  const [activeIndex, setActiveIndex] = useState(null);
+  
+  const safeData = data || [];
+  if (safeData.length === 0) return null;
+
+  const maxVal = Math.max(...safeData.map(d => d.value), 1);
+
+  const handlePress = (index) => {
+    setActiveIndex(activeIndex === index ? null : index);
+  };
+
   return (
     <View className="bg-white" style={{ borderRadius: 16, padding: isSmallDevice ? 12 : 16, marginBottom: 10, shadowColor: 'rgba(110,34,110,0.06)', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 1, shadowRadius: 10, elevation: 2 }}>
       {title && <Text style={{ fontSize: isSmallDevice ? 11 : 13, fontWeight: '800', color: '#1a0a1a', marginBottom: 12 }}>{title}</Text>}
+
+      {/* Interactive Tooltip Display */}
+      {activeIndex !== null && (
+        <View style={{ 
+          flexDirection: 'row', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          backgroundColor: '#f3e6f3', 
+          paddingVertical: 6, 
+          paddingHorizontal: 12, 
+          borderRadius: 8, 
+          marginBottom: 8,
+          borderWidth: 1, 
+          borderColor: '#ede4ed' 
+        }}>
+           <Text style={{ fontSize: 12, fontWeight: '600', color: '#6e226e' }}>
+             {safeData[activeIndex].label}
+           </Text>
+           <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#6e226e', marginHorizontal: 8 }} />
+           <Text style={{ fontSize: 14, fontWeight: '800', color: '#1a0a1a' }}>
+             {safeData[activeIndex].value}
+           </Text>
+        </View>
+      )}
+
       <View className="flex-row items-end justify-between" style={{ height: isSmallDevice ? 100 : 130 }}>
-        {data.map((d, i) => (
-          <View key={i} className="items-center" style={{ flex: 1 }}>
+        {safeData.map((d, i) => (
+          <TouchableOpacity 
+            key={i} 
+            activeOpacity={0.8} 
+            onPress={() => handlePress(i)} 
+            style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-end', height: '100%' }}
+          >
             <View
               style={{
                 width: '60%',
                 height: `${(d.value / maxVal) * 100}%`,
-                backgroundColor: '#6e226e',
+                backgroundColor: activeIndex === i ? '#9b3d9b' : '#6e226e', // Lighter purple for active
                 borderRadius: 4,
                 minHeight: 4,
+                borderWidth: activeIndex === i ? 1.5 : 0,
+                borderColor: '#fff',
+                marginBottom: activeIndex === i ? 2 : 0,
               }}
             />
-            <Text style={{ fontSize: 7, color: '#9e859e', marginTop: 4, textAlign: 'center' }}>{d.label}</Text>
-          </View>
+            {/* Static label removed */}
+          </TouchableOpacity>
         ))}
       </View>
     </View>

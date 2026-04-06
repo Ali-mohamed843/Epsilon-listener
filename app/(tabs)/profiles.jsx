@@ -357,7 +357,7 @@ const ProfileCard = ({ profile, isSmallDevice, onEdit, onReport }) => {
           <Text className="text-white font-bold" style={{ fontSize: 12 }}>Edit</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => onReport(profile.id)}
+          onPress={() => onReport(profile.hash)}
           activeOpacity={0.75}
           className="flex-1 flex-row items-center justify-center bg-primary"
           style={{ height: actionBtnH, borderRadius: 10, gap: 4 }}
@@ -414,6 +414,7 @@ export default function ProfilesScreen() {
           platform:  formatPlatformType(item.type),
           dateRange: formatDateRange(item.start_date, item.end_date),
           followers: formatFollowers(item.followers),
+          hash:      item.hash?.hash,
         }))
       );
     } else {

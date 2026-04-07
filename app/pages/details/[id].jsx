@@ -1,65 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StatusBar, Dimensions, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  View, Text, ScrollView, TouchableOpacity, StatusBar, Dimensions, 
+  KeyboardAvoidingView, Platform, ActivityIndicator, Alert
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { BackIcon, ArrowRightIcon, CheckIcon } from '../../../components/Icons';
 import StepIndicator from '../../../components/StepIndicator';
 import { Step1, Step2, Step3 } from '../../../components/EditKeywordSteps';
+import { fetchKeywordById, updateKeyword, fetchUrlGroups } from '../../../api/keywordApi';
 
 const { width, height } = Dimensions.get('window');
-
-const keywordsDatabase = {
-  '1': {
-    name: 'Climate Summit 2026',
-    platforms: ['tiktok', 'instagram', 'youtube'],
-    keywords: [
-      { id: 1, value: '#climate_summit', isFirst: true },
-      { id: 2, value: 'climate summit 2026', isFirst: false },
-      { id: 3, value: 'قمة المناخ 2026', isFirst: false },
-      { id: 4, value: 'climate_summit_egypt', isFirst: false },
-      { id: 5, value: 'COP2026', isFirst: false },
-      { id: 6, value: '#قمة_المناخ', isFirst: false },
-    ],
-    startDate: '2026-03-01',
-    endDate: '2026-03-31',
-  },
-  '2': {
-    name: 'Tech Layoffs Wave',
-    platforms: ['twitter', 'linkedin'],
-    keywords: [
-      { id: 1, value: '#tech_layoffs', isFirst: true },
-      { id: 2, value: 'tech layoffs 2026', isFirst: false },
-      { id: 3, value: 'mass layoffs tech', isFirst: false },
-      { id: 4, value: '#TechLayoffs', isFirst: false },
-    ],
-    startDate: '2026-02-15',
-    endDate: '2026-03-15',
-  },
-  '3': {
-    name: 'Renewable Energy Egypt',
-    platforms: ['facebook', 'youtube'],
-    keywords: [
-      { id: 1, value: '#renewable_energy_egypt', isFirst: true },
-      { id: 2, value: 'طاقة متجددة مصر', isFirst: false },
-      { id: 3, value: 'solar energy egypt', isFirst: false },
-    ],
-    startDate: '2026-01-01',
-    endDate: '2026-02-28',
-  },
-  '4': {
-    name: 'Gaza Ceasefire Talks',
-    platforms: ['twitter', 'tiktok', 'snapchat'],
-    keywords: [
-      { id: 1, value: '#gaza_ceasefire', isFirst: true },
-      { id: 2, value: 'ceasefire talks', isFirst: false },
-      { id: 3, value: 'وقف إطلاق النار غزة', isFirst: false },
-      { id: 4, value: '#CeasefireNow', isFirst: false },
-      { id: 5, value: 'gaza peace talks', isFirst: false },
-    ],
-    startDate: '2026-03-10',
-    endDate: '2026-03-17',
-  },
-};
 
 export default function EditKeywordScreen() {
   const insets = useSafeAreaInsets();
@@ -68,64 +19,153 @@ export default function EditKeywordScreen() {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
+  // Form State
   const [keywordName, setKeywordName] = useState('');
   const [selectedPlatforms, setSelectedPlatforms] = useState([]);
   const [keywords, setKeywords] = useState([]);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [urlGroup, setUrlGroup] = useState('');
-  const [urls, setUrls] = useState([{ id: 1, value: '' }]);
+  const [urlGroup, setUrlGroup] = useState(null);
+  const [urlGroups, setUrlGroups] = useState([]);
 
   const isSmallDevice = height < 700;
   const headerTitleSize = isSmallDevice ? 18 : 20;
   const buttonHeight = isSmallDevice ? 46 : 50;
 
+  // Load data & URL groups
   useEffect(() => {
-    if (id && keywordsDatabase[id]) {
-      const data = keywordsDatabase[id];
-      setKeywordName(data.name);
-      setSelectedPlatforms([...data.platforms]);
-      setKeywords(data.keywords.map((k) => ({ ...k })));
-      setStartDate(data.startDate);
-      setEndDate(data.endDate);
-      setIsLoaded(true);
+    if (!id) return;
+    const loadData = async () => {
+  setIsLoading(true);
+  try {
+    const [kwRes, ugRes] = await Promise.all([
+      fetchKeywordById(id),
+      fetchUrlGroups()
+    ]);
+
+    // Load URL groups first so we can reference them below
+    const groups = ugRes.success ? (ugRes.urlGroups || []) : [];
+    setUrlGroups(groups);
+
+    if (kwRes.success) {
+      const d = kwRes.data;
+      setKeywordName(d.name || '');
+      setStartDate(d.start_date?.split('T')[0] || '');
+      setEndDate(d.end_date?.split('T')[0] || '');
+
+      const platforms = Object.keys(d.autoFetch || {}).filter(k => d.autoFetch[k]);
+      setSelectedPlatforms(platforms);
+
+      const kwStr = typeof d.keywords === 'string' ? d.keywords : d.keywords?.join(',') || '';
+      const kwArr = kwStr.split(',').filter(Boolean).map((val, i) => ({
+        id: Date.now() + i,
+        value: val.trim(),
+        isFirst: i === 0
+      }));
+      setKeywords(kwArr.length ? kwArr : [{ id: Date.now(), value: '', isFirst: true }]);
+
+      // ✅ Match groupId to the already-loaded groups list
+      if (d.groupId) {
+        const matched = groups.find(g => g.id === d.groupId);
+        if (matched) setUrlGroup(matched);
+      }
+    } else {
+      setError(kwRes.message || 'Failed to load keyword');
     }
+
+  } catch (err) {
+    setError('Network error occurred');
+  } finally {
+    setIsLoading(false);
+  }
+};
+    loadData();
   }, [id]);
 
+  // Handlers
   const togglePlatform = (pid) => {
-    setSelectedPlatforms((prev) => prev.includes(pid) ? prev.filter((p) => p !== pid) : [...prev, pid]);
+    setSelectedPlatforms(prev => prev.includes(pid) ? prev.filter(p => p !== pid) : [...prev, pid]);
   };
 
   const addKeyword = () => {
-    const newId = keywords.length > 0 ? Math.max(...keywords.map((k) => k.id)) + 1 : 1;
+    const newId = keywords.length > 0 ? Math.max(...keywords.map(k => k.id)) + 1 : 1;
     setKeywords([...keywords, { id: newId, value: '', isFirst: false }]);
   };
 
-  const updateKeyword = (kwId, value) => setKeywords(keywords.map((k) => k.id === kwId ? { ...k, value } : k));
-  const deleteKeyword = (kwId) => setKeywords(keywords.filter((k) => k.id !== kwId));
-
-  const addUrl = () => {
-    const newId = urls.length > 0 ? Math.max(...urls.map((u) => u.id)) + 1 : 1;
-    setUrls([...urls, { id: newId, value: '' }]);
-  };
-
-  const updateUrl = (uid, value) => setUrls(urls.map((u) => u.id === uid ? { ...u, value } : u));
-  const deleteUrl = (uid) => { if (urls.length > 1) setUrls(urls.filter((u) => u.id !== uid)); };
+  const updateKeywordFn = (kwId, value) => setKeywords(keywords.map(k => k.id === kwId ? { ...k, value } : k));
+  const deleteKeywordFn = (kwId) => setKeywords(keywords.filter(k => k.id !== kwId));
 
   const goNext = () => { if (currentStep < 3) setCurrentStep(currentStep + 1); else handleSave(); };
   const goBack = () => { if (currentStep > 1) setCurrentStep(currentStep - 1); else router.back(); };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setIsSaving(true);
-    setTimeout(() => { setIsSaving(false); router.back(); }, 1500);
+    const payload = {
+      name: keywordName.trim(),
+      keywords: keywords.map(k => k.value.trim()).filter(Boolean),
+      autoFetch: {
+        twitter: selectedPlatforms.includes('twitter'),
+        facebook: selectedPlatforms.includes('facebook'),
+        instagram: selectedPlatforms.includes('instagram'),
+        youtube: selectedPlatforms.includes('youtube'),
+        tiktok: selectedPlatforms.includes('tiktok'),
+        linkedin: selectedPlatforms.includes('linkedin'),
+        snapchat: selectedPlatforms.includes('snapchat'),
+      },
+      start_date: startDate || null,
+      end_date: endDate || null,
+      url_group: urlGroup?.id || null,
+      pageUrls: urlGroup?.urls || [],
+      exact_keyword: false,
+      isLiveUpdates: false,
+      refetchEngagment: false,
+      stock_analysis: false,
+      useIntentsAndDrivers: false,
+      customized_intents: false,
+      ai_intents: false,
+      rangeFactor: { from: 25, to: 30, videos: 1 },
+      categories: [],
+      contactIds: [],
+      whatsappGroupIds: [],
+      intents: [],
+      drivers: [],
+      expiry_date: null,
+      refetchPeriod: null,
+      stock_related_company: null,
+      stock_related_end_date: null,
+      stock_related_start_date: null,
+      type: null,
+    };
+
+    const res = await updateKeyword(id, payload);
+    setIsSaving(false);
+
+    if (res.success) {
+      Alert.alert('Success', 'Keyword updated successfully!', [{ text: 'OK', onPress: () => router.back() }]);
+    } else {
+      Alert.alert('Error', res.message || 'Failed to update keyword');
+    }
   };
 
-  if (!isLoaded) {
+  if (isLoading) {
     return (
       <View className="flex-1 bg-surface2 items-center justify-center">
-        <Text className="text-muted" style={{ fontSize: 16 }}>Loading...</Text>
+        <ActivityIndicator size="large" color="#6e226e" />
+        <Text className="text-muted mt-3" style={{ fontSize: 14 }}>Loading keyword data...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View className="flex-1 bg-surface2 items-center justify-center px-6">
+        <Text className="text-[#e8365d] text-center mb-4" style={{ fontSize: 15 }}>{error}</Text>
+        <TouchableOpacity onPress={() => router.back()} className="bg-[#6e226e] px-6 py-3 rounded-xl">
+          <Text className="text-white font-bold" style={{ fontSize: 14 }}>Go Back</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -134,6 +174,7 @@ export default function EditKeywordScreen() {
     <View className="flex-1 bg-surface2">
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
       <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        {/* Header */}
         <View className="bg-primary overflow-hidden" style={{ paddingTop: insets.top || StatusBar.currentHeight || 0, paddingBottom: isSmallDevice ? 20 : 24, paddingHorizontal: width * 0.06 }}>
           <View className="absolute rounded-full" style={{ top: -50, right: -50, width: 160, height: 160, backgroundColor: 'rgba(255,255,255,0.06)' }} />
           <View className="flex-row items-center" style={{ marginTop: 8, gap: 12 }}>
@@ -154,7 +195,7 @@ export default function EditKeywordScreen() {
             <Step1
               keywordName={keywordName} setKeywordName={setKeywordName}
               selectedPlatforms={selectedPlatforms} togglePlatform={togglePlatform}
-              keywords={keywords} addKeyword={addKeyword} updateKeyword={updateKeyword} deleteKeyword={deleteKeyword}
+              keywords={keywords} addKeyword={addKeyword} updateKeyword={updateKeywordFn} deleteKeyword={deleteKeywordFn}
               isSmallDevice={isSmallDevice}
             />
           )}
@@ -162,10 +203,16 @@ export default function EditKeywordScreen() {
             <Step2 startDate={startDate} setStartDate={setStartDate} endDate={endDate} setEndDate={setEndDate} isSmallDevice={isSmallDevice} />
           )}
           {currentStep === 3 && (
-            <Step3 urlGroup={urlGroup} setUrlGroup={setUrlGroup} urls={urls} addUrl={addUrl} updateUrl={updateUrl} deleteUrl={deleteUrl} isSmallDevice={isSmallDevice} />
+            <Step3 
+              urlGroup={urlGroup} 
+              setUrlGroup={setUrlGroup} 
+              urlGroups={urlGroups} 
+              isSmallDevice={isSmallDevice} 
+            />
           )}
         </ScrollView>
 
+        {/* Footer */}
         <View className="flex-row border-t border-border bg-surface2" style={{ paddingHorizontal: width * 0.06, paddingTop: 16, paddingBottom: Math.max(insets.bottom, 16) + 8, gap: 12 }}>
           {currentStep > 1 && (
             <TouchableOpacity onPress={goBack} className="flex-1 items-center justify-center border-2 border-border" style={{ height: buttonHeight, borderRadius: 14 }}>
@@ -173,14 +220,20 @@ export default function EditKeywordScreen() {
             </TouchableOpacity>
           )}
           <TouchableOpacity
-            onPress={goNext} activeOpacity={0.85}
+            onPress={goNext} disabled={isSaving} activeOpacity={0.85}
             className="flex-row items-center justify-center"
-            style={{ flex: currentStep > 1 ? 2 : 1, height: buttonHeight, borderRadius: 14, backgroundColor: isSaving ? '#00a878' : '#6e226e', gap: 8, shadowColor: '#6e226e', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 20, elevation: 6 }}
+            style={{ flex: currentStep > 1 ? 2 : 1, height: buttonHeight, borderRadius: 14, backgroundColor: isSaving ? '#00a878' : '#6e226e', gap: 8 }}
           >
-            <Text className="text-white font-bold" style={{ fontSize: 15 }}>
-              {isSaving ? '✓ Saved!' : currentStep === 3 ? 'Save' : 'Next'}
-            </Text>
-            {!isSaving && (currentStep === 3 ? <CheckIcon /> : <ArrowRightIcon />)}
+            {isSaving ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <>
+                <Text className="text-white font-bold" style={{ fontSize: 15 }}>
+                  {currentStep === 3 ? 'Update' : 'Next'}
+                </Text>
+                {currentStep === 3 ? <CheckIcon /> : <ArrowRightIcon />}
+              </>
+            )}
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

@@ -8,12 +8,15 @@ import {
   Dimensions,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { BackIcon, ArrowRightIcon, CheckIcon } from '../../../components/Icons';
 import StepIndicator from '../../../components/StepIndicator';
 import { Step1, Step2 } from '../../../components/EditProfileSteps';
+import { fetchProfileById, updateProfile } from '../../../api/profileApi';
 
 const { width, height } = Dimensions.get('window');
 
@@ -22,72 +25,6 @@ const PROFILE_STEPS = [
   { number: 2, label: 'Settings' },
 ];
 
-const profilesDatabase = {
-  '1': {
-    name: 'NileSoft Solutions – FB 2026',
-    keywords: [
-      { id: 1, value: 'NileSoft', isFirst: true },
-      { id: 2, value: 'Nile Soft', isFirst: false },
-      { id: 3, value: 'نايل سوفت', isFirst: false },
-    ],
-    exactMatch: false,
-    startDate: '2026-02-01',
-    endDate: '2026-03-31',
-    profileUrl: 'https://www.facebook.com/NileSoftEgypt',
-    liveUpdates: false,
-    refetchEngagement: true,
-    refetchPeriod: '6',
-    stockMarketAnalysis: false,
-  },
-  '2': {
-    name: 'TechVision AI – Twitter',
-    keywords: [
-      { id: 1, value: 'TechVision', isFirst: true },
-      { id: 2, value: 'Tech Vision AI', isFirst: false },
-    ],
-    exactMatch: true,
-    startDate: '2026-01-15',
-    endDate: '2026-04-15',
-    profileUrl: 'https://twitter.com/TechVisionAI',
-    liveUpdates: true,
-    refetchEngagement: false,
-    refetchPeriod: '',
-    stockMarketAnalysis: true,
-  },
-  '3': {
-    name: 'Green Energy Corp – LinkedIn',
-    keywords: [
-      { id: 1, value: 'Green Energy Corp', isFirst: true },
-      { id: 2, value: 'GreenEnergy', isFirst: false },
-      { id: 3, value: 'طاقة خضراء', isFirst: false },
-      { id: 4, value: '#GreenEnergyCorp', isFirst: false },
-    ],
-    exactMatch: false,
-    startDate: '2026-03-01',
-    endDate: '2026-06-30',
-    profileUrl: 'https://linkedin.com/company/green-energy-corp',
-    liveUpdates: false,
-    refetchEngagement: true,
-    refetchPeriod: '24',
-    stockMarketAnalysis: true,
-  },
-  '4': {
-    name: 'Cairo News Hub – Instagram',
-    keywords: [
-      { id: 1, value: 'Cairo News Hub', isFirst: true },
-      { id: 2, value: 'أخبار القاهرة', isFirst: false },
-    ],
-    exactMatch: true,
-    startDate: '2026-02-10',
-    endDate: '2026-05-10',
-    profileUrl: 'https://instagram.com/caironewshub',
-    liveUpdates: true,
-    refetchEngagement: true,
-    refetchPeriod: '12',
-    stockMarketAnalysis: false,
-  },
-};
-
 export default function EditProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -95,7 +32,8 @@ export default function EditProfileScreen() {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
   // Step 1 state
   const [profileName, setProfileName] = useState('');
@@ -115,21 +53,51 @@ export default function EditProfileScreen() {
   const headerTitleSize = isSmallDevice ? 18 : 20;
   const buttonHeight = isSmallDevice ? 46 : 50;
 
+  // Fetch profile data
   useEffect(() => {
-    if (id && profilesDatabase[id]) {
-      const data = profilesDatabase[id];
-      setProfileName(data.name);
-      setKeywords(data.keywords.map((k) => ({ ...k })));
-      setExactMatch(data.exactMatch);
-      setStartDate(data.startDate);
-      setEndDate(data.endDate);
-      setProfileUrl(data.profileUrl);
-      setLiveUpdates(data.liveUpdates);
-      setRefetchEngagement(data.refetchEngagement);
-      setRefetchPeriod(data.refetchPeriod);
-      setStockMarketAnalysis(data.stockMarketAnalysis);
-      setIsLoaded(true);
-    }
+    if (!id) return;
+    const loadProfile = async () => {
+  setIsLoading(true);
+  setError('');
+  const res = await fetchProfileById(id);
+  if (res.success) {
+    const data = res.data;
+    setProfileName(data.name || '');
+    
+    // ✅ profile_url field, fallback to pageUrls[0]
+    setProfileUrl(data.profile_url || data.pageUrls?.[0] || '');
+    
+    setStartDate(data.start_date?.split('T')[0] || '');
+    setEndDate(data.end_date?.split('T')[0] || '');
+    setExactMatch(!!data.exact_keyword);
+    setLiveUpdates(!!data.isLiveUpdates);
+    setRefetchEngagement(!!data.refetchEngagment);
+    setRefetchPeriod(data.refetchPeriod ? String(data.refetchPeriod) : '');
+    setStockMarketAnalysis(!!data.stock_analysis);
+
+    // ✅ Handle empty string keywords gracefully
+    const kwStr = typeof data.keywords === 'string'
+      ? data.keywords
+      : (data.keywords?.join(',') || '');
+    
+    const kwArr = kwStr
+      .split(',')
+      .map(v => v.trim())
+      .filter(Boolean)
+      .map((val, i) => ({ id: Date.now() + i, value: val, isFirst: i === 0 }));
+
+    // ✅ Always ensure at least one row, and always make first row editable
+    setKeywords(
+      kwArr.length
+        ? kwArr
+        : [{ id: Date.now(), value: '', isFirst: true }]
+    );
+  } else {
+    setError(res.message || 'Failed to load profile');
+  }
+  setIsLoading(false);
+};
+    loadProfile();
   }, [id]);
 
   const addKeyword = () => {
@@ -161,20 +129,48 @@ export default function EditProfileScreen() {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
-      router.back();
-    }, 1500);
+    const keywordsArr = keywords.map(k => k.value.trim()).filter(Boolean);
+    const payload = {
+      name: profileName.trim(),
+      profile_url: profileUrl.trim(),
+      keywords: keywordsArr,
+      exact_keyword: exactMatch,
+      start_date: startDate || null,
+      end_date: endDate || null,
+      isLiveUpdates: liveUpdates,
+      refetchEngagment: refetchEngagement,
+      refetchPeriod: refetchPeriod ? parseInt(refetchPeriod, 10) : null,
+      stock_analysis: stockMarketAnalysis,
+    };
+
+    const res = await updateProfile(id, payload);
+    setIsSaving(false);
+
+    if (res.success) {
+      Alert.alert('Success', 'Profile updated successfully', [{ text: 'OK', onPress: () => router.back() }]);
+    } else {
+      Alert.alert('Error', res.message || 'Failed to update profile. Please try again.');
+    }
   };
 
-  if (!isLoaded) {
+  if (isLoading) {
     return (
       <View className="flex-1 bg-surface2 items-center justify-center">
-        <Text className="text-muted" style={{ fontSize: 16 }}>
-          Loading...
-        </Text>
+        <ActivityIndicator size="large" color="#6e226e" />
+        <Text className="text-muted mt-3" style={{ fontSize: 14 }}>Loading profile...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View className="flex-1 bg-surface2 items-center justify-center px-6">
+        <Text className="text-[#e8365d] text-center mb-4" style={{ fontSize: 15 }}>{error}</Text>
+        <TouchableOpacity onPress={() => router.back()} className="bg-[#6e226e] px-6 py-3 rounded-xl">
+          <Text className="text-white font-bold" style={{ fontSize: 14 }}>Go Back</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -196,47 +192,22 @@ export default function EditProfileScreen() {
             paddingHorizontal: width * 0.06,
           }}
         >
-          <View
-            className="absolute rounded-full"
-            style={{
-              top: -50,
-              right: -50,
-              width: 160,
-              height: 160,
-              backgroundColor: 'rgba(255,255,255,0.06)',
-            }}
-          />
+          <View className="absolute rounded-full" style={{ top: -50, right: -50, width: 160, height: 160, backgroundColor: 'rgba(255,255,255,0.06)' }} />
 
           <View className="flex-row items-center" style={{ marginTop: 8, gap: 12 }}>
             <TouchableOpacity
               onPress={goBack}
               className="items-center justify-center"
-              style={{
-                width: 36,
-                height: 36,
-                backgroundColor: 'rgba(255,255,255,0.15)',
-                borderRadius: 10,
-              }}
+              style={{ width: 36, height: 36, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 10 }}
             >
               <BackIcon />
             </TouchableOpacity>
 
             <View className="flex-1">
-              <Text
-                className="uppercase"
-                style={{
-                  fontSize: 11,
-                  color: 'rgba(255,255,255,0.6)',
-                  letterSpacing: 1,
-                  marginBottom: 2,
-                }}
-              >
+              <Text className="uppercase" style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', letterSpacing: 1, marginBottom: 2 }}>
                 Profile Analysis
               </Text>
-              <Text
-                className="text-white font-extrabold"
-                style={{ fontSize: headerTitleSize, letterSpacing: -0.4 }}
-              >
+              <Text className="text-white font-extrabold" style={{ fontSize: headerTitleSize, letterSpacing: -0.4 }}>
                 Edit Profile
               </Text>
             </View>
@@ -244,11 +215,7 @@ export default function EditProfileScreen() {
         </View>
 
         {/* ─── Step Indicator ─── */}
-        <StepIndicator
-          currentStep={currentStep}
-          isSmallDevice={isSmallDevice}
-          steps={PROFILE_STEPS}
-        />
+        <StepIndicator currentStep={currentStep} isSmallDevice={isSmallDevice} steps={PROFILE_STEPS} />
 
         {/* ─── Body ─── */}
         <ScrollView
@@ -298,12 +265,7 @@ export default function EditProfileScreen() {
         {/* ─── Bottom Navigation ─── */}
         <View
           className="flex-row border-t border-border bg-surface2"
-          style={{
-            paddingHorizontal: width * 0.06,
-            paddingTop: 16,
-            paddingBottom: Math.max(insets.bottom, 16) + 8,
-            gap: 12,
-          }}
+          style={{ paddingHorizontal: width * 0.06, paddingTop: 16, paddingBottom: Math.max(insets.bottom, 16) + 8, gap: 12 }}
         >
           {currentStep > 1 && (
             <TouchableOpacity
@@ -311,14 +273,13 @@ export default function EditProfileScreen() {
               className="flex-1 items-center justify-center border-2 border-border"
               style={{ height: buttonHeight, borderRadius: 14 }}
             >
-              <Text className="text-muted font-bold" style={{ fontSize: 15 }}>
-                Back
-              </Text>
+              <Text className="text-muted font-bold" style={{ fontSize: 15 }}>Back</Text>
             </TouchableOpacity>
           )}
 
           <TouchableOpacity
             onPress={goNext}
+            disabled={isSaving}
             activeOpacity={0.85}
             className="flex-row items-center justify-center"
             style={{
@@ -334,15 +295,16 @@ export default function EditProfileScreen() {
               elevation: 6,
             }}
           >
-            <Text className="text-white font-bold" style={{ fontSize: 15 }}>
-              {isSaving
-                ? '✓ Saved!'
-                : currentStep === totalSteps
-                ? 'Update'
-                : 'Next'}
-            </Text>
-            {!isSaving &&
-              (currentStep === totalSteps ? <CheckIcon /> : <ArrowRightIcon />)}
+            {isSaving ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <>
+                <Text className="text-white font-bold" style={{ fontSize: 15 }}>
+                  {currentStep === totalSteps ? 'Update' : 'Next'}
+                </Text>
+                {currentStep === totalSteps ? <CheckIcon /> : <ArrowRightIcon />}
+              </>
+            )}
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>

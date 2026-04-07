@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,52 +6,60 @@ import {
   StatusBar,
   Dimensions,
   Platform,
+  Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
 const PauseIcon = () => (
   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-    <View
-      style={{
-        width: width * 0.03,
-        height: width * 0.082,
-        backgroundColor: '#6e226e',
-        borderRadius: 4,
-      }}
-    />
-    <View
-      style={{
-        width: width * 0.03,
-        height: width * 0.082,
-        backgroundColor: '#6e226e',
-        borderRadius: 4,
-      }}
-    />
+    <View style={{ width: width * 0.03, height: width * 0.082, backgroundColor: '#6e226e', borderRadius: 4 }} />
+    <View style={{ width: width * 0.03, height: width * 0.082, backgroundColor: '#6e226e', borderRadius: 4 }} />
   </View>
 );
 
 export default function Index() {
   const insets = useSafeAreaInsets();
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
 
-  const isSmallDevice = height < 700;
+  const isSmallDevice  = height < 700;
   const isMediumDevice = height >= 700 && height < 850;
 
-  const logoSize = isSmallDevice ? 60 : isMediumDevice ? 72 : 80;
-  const appNameSize = isSmallDevice ? 28 : isMediumDevice ? 32 : 36;
-  const taglineSize = isSmallDevice ? 13 : isMediumDevice ? 14 : 15;
-  const buttonHeight = isSmallDevice ? 46 : isMediumDevice ? 50 : 54;
+  const logoSize       = isSmallDevice ? 60 : isMediumDevice ? 72 : 80;
+  const appNameSize    = isSmallDevice ? 28 : isMediumDevice ? 32 : 36;
+  const taglineSize    = isSmallDevice ? 13 : isMediumDevice ? 14 : 15;
+  const buttonHeight   = isSmallDevice ? 46 : isMediumDevice ? 50 : 54;
   const buttonFontSize = isSmallDevice ? 14 : 16;
   const logoBorderRadius = isSmallDevice ? 16 : 22;
 
   const bottomPadding = Platform.select({
-    ios: insets.bottom + (isSmallDevice ? 20 : 30),
+    ios:     insets.bottom + (isSmallDevice ? 20 : 30),
     android: insets.bottom + (isSmallDevice ? 24 : 40),
     default: insets.bottom + 30,
   });
+
+  useEffect(() => {
+    // Animate content in
+    Animated.parallel([
+      Animated.timing(fadeAnim,  { toValue: 1, duration: 600, useNativeDriver: true }),
+      Animated.timing(slideAnim, { toValue: 0, duration: 600, useNativeDriver: true }),
+    ]).start();
+
+    // Check for saved token
+    (async () => {
+      const token = await AsyncStorage.getItem('authToken');
+      if (token) {
+        // Small delay so the splash doesn't flash
+        setTimeout(() => router.replace('/(tabs)'), 800);
+      }
+      // No token → stay on splash, show the Sign In button
+    })();
+  }, []);
 
   return (
     <View style={{ flex: 1, backgroundColor: '#2a0830' }}>
@@ -62,19 +70,17 @@ export default function Index() {
         locations={[0, 0.35, 0.65, 1]}
         start={{ x: 0.6, y: 0 }}
         end={{ x: 0.4, y: 1 }}
-        style={{
-          flex: 1,
-          paddingTop: insets.top,
-          paddingBottom: bottomPadding,
-        }}
+        style={{ flex: 1, paddingTop: insets.top, paddingBottom: bottomPadding }}
       >
-        <View
+        <Animated.View
           style={{
             flex: 1,
             alignItems: 'center',
             justifyContent: 'center',
             paddingHorizontal: width * 0.1,
             paddingBottom: isSmallDevice ? 20 : 40,
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
           }}
         >
           <View
@@ -98,7 +104,6 @@ export default function Index() {
 
           <Text
             style={{
-              fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
               fontSize: appNameSize,
               fontWeight: '800',
               color: '#ffffff',
@@ -121,12 +126,14 @@ export default function Index() {
           >
             Social intelligence & crisis monitoring platform
           </Text>
-        </View>
+        </Animated.View>
 
-        <View
+        <Animated.View
           style={{
             paddingHorizontal: width * 0.07,
             gap: isSmallDevice ? 10 : 14,
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
           }}
         >
           <TouchableOpacity
@@ -148,7 +155,6 @@ export default function Index() {
           >
             <Text
               style={{
-                fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
                 fontSize: buttonFontSize,
                 fontWeight: '700',
                 color: '#3d0f42',
@@ -158,33 +164,7 @@ export default function Index() {
               Sign In
             </Text>
           </TouchableOpacity>
-{/* 
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={{
-              width: '100%',
-              height: buttonHeight,
-              borderRadius: 32,
-              borderWidth: 2,
-              borderColor: 'rgba(255,255,255,0.4)',
-              backgroundColor: 'transparent',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Text
-              style={{
-                fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
-                fontSize: buttonFontSize,
-                fontWeight: '700',
-                color: '#ffffff',
-                letterSpacing: 0.2,
-              }}
-            >
-              Create Account
-            </Text>
-          </TouchableOpacity> */}
-        </View>
+        </Animated.View>
       </LinearGradient>
     </View>
   );

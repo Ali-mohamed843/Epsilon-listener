@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
+export { default as SentimentWordCloudWebView } from './SentimentWordCloudWebView';
 
 const { width } = Dimensions.get('window');
 
@@ -83,20 +84,95 @@ export const FindingsCard = ({ fakePercent, realPercent, totalAccounts, riskLeve
   </View>
 );
 
-export const SentimentWordCloud = ({ title, percentage, words, type }) => {
+export const SentimentWordCloud = ({ title, percentage, words, type, onWordPress }) => {
   const isPositive = type === 'positive';
   const color = isPositive ? '#00a878' : '#e8365d';
-  const sizes = [15, 11, 13, 10, 14, 11, 12, 10, 13, 11];
+  const bgColor = isPositive ? 'rgba(0,168,120,0.07)' : 'rgba(232,54,93,0.07)';
+
+  const maxVal = Math.max(...words.map(w => w.value || 1), 1);
+  
+  const getFontSize = (val) => {
+    const ratio = val / maxVal;
+    return Math.round(12 + ratio * 18); // Range: 12-30
+  };
+  
+  const getOpacity = (val) => {
+    const ratio = val / maxVal;
+    return 0.6 + ratio * 0.4; // Range: 0.6-1.0
+  };
+
+  const getWeight = (val) => {
+    const ratio = val / maxVal;
+    return ratio > 0.7 ? '900' : ratio > 0.4 ? '700' : '600';
+  };
 
   return (
-    <View className="bg-white" style={{ flex: 1, borderRadius: 16, padding: 14, shadowColor: 'rgba(110,34,110,0.06)', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 1, shadowRadius: 10, elevation: 2 }}>
-      <View className="flex-row justify-between items-center" style={{ marginBottom: 10 }}>
-        <Text style={{ fontSize: 12, fontWeight: '800', color: '#1a0a1a' }}>{title}</Text>
-        <Text style={{ fontSize: 13, fontWeight: '800', color }}>{percentage}%</Text>
+    <View style={{ 
+      flex: 1, 
+      borderRadius: 16, 
+      padding: 16, 
+      backgroundColor: '#fff',
+      shadowColor: 'rgba(110,34,110,0.06)',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 1,
+      shadowRadius: 10,
+      elevation: 2 
+    }}>
+      {/* Header */}
+      <View style={{ 
+        flexDirection: 'row', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        marginBottom: 12,
+        paddingBottom: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#f5f5f5'
+      }}>
+        <Text style={{ fontSize: 13, fontWeight: '800', color: '#1a0a1a' }}>{title}</Text>
+        <View style={{ 
+          paddingHorizontal: 10, 
+          paddingVertical: 4, 
+          borderRadius: 12, 
+          backgroundColor: bgColor 
+        }}>
+          <Text style={{ fontSize: 12, fontWeight: '800', color }}>{percentage}%</Text>
+        </View>
       </View>
-      <View className="flex-row flex-wrap" style={{ gap: 4 }}>
+
+      {/* Word Cloud Area */}
+      <View style={{ 
+        flexDirection: 'row', 
+        flexWrap: 'wrap', 
+        gap: 1,
+        paddingVertical: 8,
+        minHeight: 120,
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
         {words.map((word, i) => (
-          <Text key={i} style={{ fontWeight: '600', fontSize: sizes[i % sizes.length], color, marginRight: 5 }}>{word}</Text>
+          <TouchableOpacity
+            key={i}
+            onPress={() => onWordPress?.(word)}
+            activeOpacity={0.7}
+            style={{
+              paddingHorizontal: 8,
+              paddingVertical: 4,
+              borderRadius: 8,
+              backgroundColor: 'transparent',
+            }}
+          >
+            <Text
+              style={{
+                fontWeight: getWeight(word.value || 1),
+                fontSize: getFontSize(word.value || 1),
+                color: color,
+                opacity: getOpacity(word.value || 1),
+                textAlign: 'center',
+              }}
+            >
+              {word.text}
+            </Text>
+          </TouchableOpacity>
         ))}
       </View>
     </View>
@@ -124,14 +200,96 @@ export const DonutLegend = ({ title, centerValue, centerLabel, items }) => (
   </View>
 );
 
-export const HashtagCloud = ({ hashtags }) => {
+export const HashtagCloud = ({ hashtags = [], onHashtagPress }) => {
   const sizes = [18, 13, 15, 11, 16, 12, 14, 13, 11, 15, 12, 11, 10, 13, 10, 12, 14, 11];
+  
+  // Don't render if no hashtags
+  if (!hashtags || hashtags.length === 0) {
+    return (
+      <View 
+        className="bg-white" 
+        style={{ 
+          borderRadius: 16, 
+          padding: 16, 
+          marginBottom: 10, 
+          shadowColor: 'rgba(110,34,110,0.06)', 
+          shadowOffset: { width: 0, height: 2 }, 
+          shadowOpacity: 1, 
+          shadowRadius: 10, 
+          elevation: 2,
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 80,
+        }}
+      >
+        <Text style={{ color: '#9e859e', fontSize: 12 }}>No hashtags found</Text>
+      </View>
+    );
+  }
+  
   return (
-    <View className="bg-white" style={{ borderRadius: 16, padding: 16, marginBottom: 10, shadowColor: 'rgba(110,34,110,0.06)', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 1, shadowRadius: 10, elevation: 2 }}>
+    <View 
+      className="bg-white" 
+      style={{ 
+        borderRadius: 16, 
+        padding: 16, 
+        marginBottom: 10, 
+        shadowColor: 'rgba(110,34,110,0.06)', 
+        shadowOffset: { width: 0, height: 2 }, 
+        shadowOpacity: 1, 
+        shadowRadius: 10, 
+        elevation: 2 
+      }}
+    >
       <View className="flex-row flex-wrap" style={{ gap: 4 }}>
-        {hashtags.map((tag, i) => (
-          <Text key={i} style={{ fontWeight: '700', fontSize: sizes[i % sizes.length], color: '#00a878', marginRight: 6, lineHeight: sizes[i % sizes.length] * 2 }}>{tag}</Text>
-        ))}
+        {hashtags.map((tag, i) => {
+          // Handle both object format {id, name, platformContents} and string format
+          const tagName = typeof tag === 'string' ? tag : (tag.name || tag);
+          const tagId = typeof tag === 'string' ? i : (tag.id || i);
+          const hasLink = typeof tag === 'object' && tag.platformContents && tag.platformContents.length > 0;
+          
+          return (
+            <TouchableOpacity
+              key={tagId}
+              onPress={() => {
+                if (onHashtagPress) {
+                  onHashtagPress(tag);
+                } else if (hasLink) {
+                  // Default behavior: open first permalink
+                  const permalink = tag.platformContents[0].permalink;
+                  if (permalink) {
+                    Linking.openURL(permalink).catch(err => console.error('Failed to open URL:', err));
+                  }
+                }
+              }}
+              activeOpacity={0.7}
+              style={{
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                borderRadius: 8,
+                backgroundColor: hasLink ? 'rgba(0,168,120,0.12)' : 'rgba(0,168,120,0.08)',
+                marginRight: 6,
+                marginBottom: 6,
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}
+            >
+              <Text 
+                style={{ 
+                  fontWeight: '700', 
+                  fontSize: sizes[i % sizes.length], 
+                  color: '#00a878', 
+                  lineHeight: sizes[i % sizes.length] * 1.4 
+                }}
+              >
+                {tagName}
+              </Text>
+              {hasLink && (
+                <Text style={{ marginLeft: 4, fontSize: 10, color: '#00a878' }}>↗</Text>
+              )}
+            </TouchableOpacity>
+          );
+        })}
       </View>
     </View>
   );

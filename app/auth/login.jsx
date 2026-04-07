@@ -392,15 +392,15 @@ export default function Login() {
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity className="self-end mb-4" disabled={isLoading || isSuccess}>
+            {/* <TouchableOpacity className="self-end mb-4" disabled={isLoading || isSuccess}>
               <Text className="text-primary font-semibold text-[13px]">Forgot password?</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             <TouchableOpacity
               activeOpacity={0.88}
               onPress={handleSignIn}
               disabled={isLoading || isSuccess}
-              className="w-full flex-row items-center justify-center rounded-2xl"
+              className="w-full mt-8 flex-row items-center justify-center rounded-2xl"
               style={{
                 height: buttonHeight,
                 backgroundColor: getButtonStyle(),

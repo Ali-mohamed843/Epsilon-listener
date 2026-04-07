@@ -137,27 +137,30 @@ export default function ReportFilters({ fromDate, toDate, onDateRangeChange, onC
                   <Text style={{ fontSize: 13, fontWeight: '500', color: '#334155' }}>{tempTo ? formatDisplay(tempTo) : '—'}</Text>
                 </TouchableOpacity>
               </View>
-              <View style={{ flexDirection: 'row' }}>
-                <View style={{ width: 150, borderRightWidth: 1, borderRightColor: '#f1f5f9', paddingVertical: 8 }}>
-                  {QUICK_RANGES.map((range) => (
-                    <TouchableOpacity key={range.label} onPress={() => applyQuickRange(range)} style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
-                      <Text style={{ fontSize: 13, color: '#475569' }}>{range.label}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-                <View style={{ flex: 1, padding: 12 }}>
-                  <MiniCalendar year={calYear} month={calMonth} onYearChange={setCalYear} onMonthChange={setCalMonth} fromDate={tempFrom} toDate={tempTo} onDayPress={handleDayPress} selectingFrom={selectingFrom} />
-                  <Text style={{ fontSize: 11, color: '#94a3b8', textAlign: 'center', marginTop: 8 }}>{selectingFrom ? 'Select start date' : 'Select end date'}</Text>
-                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
-                    <TouchableOpacity onPress={handleClearInModal} activeOpacity={0.7} style={{ flex: 1, paddingVertical: 10, borderRadius: 8, alignItems: 'center', borderWidth: 1, borderColor: '#e2e8f0', backgroundColor: '#fff' }}>
-                      <Text style={{ fontSize: 13, fontWeight: '600', color: '#EF4444' }}>Clear</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={applyDates} activeOpacity={0.8} disabled={!tempFrom || !tempTo} style={{ flex: 2, paddingVertical: 10, borderRadius: 8, alignItems: 'center', backgroundColor: tempFrom && tempTo ? BRAND : '#e2e8f0' }}>
-                      <Text style={{ fontSize: 13, fontWeight: '600', color: tempFrom && tempTo ? '#fff' : '#94a3b8' }}>Apply</Text>
-                    </TouchableOpacity>
-                  </View>
+              <View style={{ flexDirection: 'column' }}>
+              {/* Quick ranges as horizontal pill chips */}
+              <View style={{ borderBottomWidth: 1, borderBottomColor: '#f1f5f9', paddingVertical: 8, flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 8, gap: 4 }}>
+                {QUICK_RANGES.map((range) => (
+                  <TouchableOpacity key={range.label} onPress={() => applyQuickRange(range)} style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: '#f1f5f9' }}>
+                    <Text style={{ fontSize: 12, color: '#475569', fontWeight: '500' }}>{range.label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* Calendar below */}
+              <View style={{ padding: 12, alignItems: 'center' }}>
+                <MiniCalendar year={calYear} month={calMonth} onYearChange={setCalYear} onMonthChange={setCalMonth} fromDate={tempFrom} toDate={tempTo} onDayPress={handleDayPress} selectingFrom={selectingFrom} />
+                <Text style={{ fontSize: 11, color: '#94a3b8', textAlign: 'center', marginTop: 8 }}>{selectingFrom ? 'Select start date' : 'Select end date'}</Text>
+                <View style={{ flexDirection: 'row', gap: 8, marginTop: 12, width: '100%' }}>
+                  <TouchableOpacity onPress={handleClearInModal} activeOpacity={0.7} style={{ flex: 1, paddingVertical: 10, borderRadius: 8, alignItems: 'center', borderWidth: 1, borderColor: '#e2e8f0', backgroundColor: '#fff' }}>
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: '#EF4444' }}>Clear</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={applyDates} activeOpacity={0.8} disabled={!tempFrom || !tempTo} style={{ flex: 2, paddingVertical: 10, borderRadius: 8, alignItems: 'center', backgroundColor: tempFrom && tempTo ? BRAND : '#e2e8f0' }}>
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: tempFrom && tempTo ? '#fff' : '#94a3b8' }}>Apply</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
+            </View>
             </View>
           </TouchableOpacity>
         </TouchableOpacity>

@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
 import { PlusIcon, DeleteIcon, CalendarIcon, ShieldIcon, LinkIcon, InfoIcon, ChevronDownIcon, platformsData } from './Icons';
 import DatePickerCard from './DatePickerCard';
 
 const { width, height } = Dimensions.get('window');
 
+// ── Step 1: Keyword Details ───────────────────────────────────────────────────
 const PlatformChip = ({ platform, isSelected, onToggle, isSmallDevice }) => {
   const IconComponent = platform.icon;
   return (
@@ -37,7 +38,7 @@ const KeywordRow = ({ value, onChange, onDelete, isFirst, isSmallDevice }) => (
       onChangeText={onChange}
       placeholder="Enter keyword..."
       placeholderTextColor="#c8b2c8"
-      editable={!isFirst}
+      editable={true}
     />
     <TouchableOpacity
       onPress={onDelete}
@@ -49,7 +50,7 @@ const KeywordRow = ({ value, onChange, onDelete, isFirst, isSmallDevice }) => (
   </View>
 );
 
-export function Step1({ keywordName, setKeywordName, selectedPlatforms, togglePlatform, keywords, addKeyword, updateKeyword, deleteKeyword, isSmallDevice }) {
+export function Step1({ keywordName, setKeywordName, selectedPlatforms = [], togglePlatform, keywords = [], addKeyword, updateKeyword, deleteKeyword, isSmallDevice }) {
   return (
     <View>
       <Text className="text-muted font-bold uppercase" style={{ fontSize: 12, letterSpacing: 1, marginBottom: 8, marginTop: 20 }}>Keyword Name</Text>
@@ -65,7 +66,13 @@ export function Step1({ keywordName, setKeywordName, selectedPlatforms, togglePl
       <Text className="text-muted font-bold uppercase" style={{ fontSize: 12, letterSpacing: 1, marginBottom: 8, marginTop: 20 }}>Keyword Platforms</Text>
       <View className="flex-row flex-wrap" style={{ gap: 8 }}>
         {platformsData.map((platform) => (
-          <PlatformChip key={platform.id} platform={platform} isSelected={selectedPlatforms.includes(platform.id)} onToggle={() => togglePlatform(platform.id)} isSmallDevice={isSmallDevice} />
+          <PlatformChip 
+            key={platform.id} 
+            platform={platform} 
+            isSelected={selectedPlatforms.includes(platform.id)} 
+            onToggle={() => togglePlatform(platform.id)} 
+            isSmallDevice={isSmallDevice} 
+          />
         ))}
       </View>
 
@@ -84,6 +91,7 @@ export function Step1({ keywordName, setKeywordName, selectedPlatforms, togglePl
   );
 }
 
+// ── Step 2: Monitoring Period ─────────────────────────────────────────────────
 export function Step2({ startDate, setStartDate, endDate, setEndDate, isSmallDevice }) {
   const durationDays = useMemo(() => {
     const s = new Date(startDate);
@@ -114,7 +122,10 @@ export function Step2({ startDate, setStartDate, endDate, setEndDate, isSmallDev
   );
 }
 
-export function Step3({ urlGroup, setUrlGroup, urls, addUrl, updateUrl, deleteUrl, isSmallDevice }) {
+// ── Step 3: URL Groups (Dynamic Dropdown) ─────────────────────────────────────
+export function Step3({ urlGroup, setUrlGroup, urlGroups = [], isSmallDevice }) {
+  const [showDropdown, setShowDropdown] = useState(false);
+
   return (
     <View>
       <View className="flex-row items-center" style={{ marginTop: 12, marginBottom: 18, gap: 8 }}>
@@ -125,56 +136,68 @@ export function Step3({ urlGroup, setUrlGroup, urls, addUrl, updateUrl, deleteUr
       <View className="flex-row items-start" style={{ borderRadius: 14, padding: 14, paddingHorizontal: 16, gap: 10, backgroundColor: '#f3e6f3', marginBottom: 16 }}>
         <InfoIcon size={18} />
         <Text className="text-primary" style={{ fontSize: 12.5, lineHeight: 18.75, flex: 1 }}>
-          Optionally restrict data collection to specific page URLs. Leave empty to fetch from all sources.
+          Select a predefined group of pages to restrict data collection.
         </Text>
       </View>
 
       <Text className="text-muted font-bold uppercase" style={{ fontSize: 11, letterSpacing: 1, marginBottom: 8 }}>URL Group</Text>
-      <View className="relative">
-        <TextInput
-          className="bg-white text-dark"
-          style={{ borderWidth: 1.5, borderColor: '#ede4ed', borderRadius: 14, paddingHorizontal: 16, paddingVertical: isSmallDevice ? 11 : 13, paddingRight: 44, fontSize: 14 }}
-          value={urlGroup}
-          onChangeText={setUrlGroup}
-          placeholder="Select a group..."
-          placeholderTextColor="#c8b2c8"
-        />
-        <View className="absolute" style={{ right: 14, top: 0, bottom: 0, justifyContent: 'center' }}>
-          <ChevronDownIcon />
-        </View>
-      </View>
-      <Text className="text-muted" style={{ fontSize: 12, marginTop: 6, paddingLeft: 4, lineHeight: 18 }}>
-        Choose a URL group to auto-fill page URLs below
-      </Text>
-
-      <View className="flex-row items-center justify-between" style={{ marginTop: 20, marginBottom: 10 }}>
-        <Text className="text-muted font-bold uppercase" style={{ fontSize: 11, letterSpacing: 1 }}>Page URLs</Text>
-        <TouchableOpacity onPress={addUrl} className="flex-row items-center bg-primary" style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10, gap: 5 }}>
-          <PlusIcon />
-          <Text className="text-white font-bold" style={{ fontSize: 12 }}>Add More</Text>
+      
+      {/* Dropdown Selector */}
+      <View style={{ position: 'relative', zIndex: 10 }}>
+        <TouchableOpacity
+          onPress={() => setShowDropdown(!showDropdown)}
+          className="bg-white text-dark flex-row items-center justify-between"
+          style={{ borderWidth: 1.5, borderColor: showDropdown ? '#6e226e' : '#ede4ed', borderRadius: 14, paddingHorizontal: 16, paddingVertical: isSmallDevice ? 12 : 14, height: isSmallDevice ? 46 : 50 }}
+          activeOpacity={0.8}
+        >
+          <Text style={{ fontSize: 14, color: urlGroup ? '#1a0a1a' : '#c8b2c8', flex: 1 }} numberOfLines={1}>
+            {urlGroup ? urlGroup.name : 'Select URL Group...'}
+          </Text>
+          <ChevronDownIcon color={showDropdown ? '#6e226e' : '#9e859e'} />
         </TouchableOpacity>
-      </View>
 
-      {urls.map((url, index) => (
-        <View key={url.id} className="flex-row items-center" style={{ marginBottom: 8, gap: 8 }}>
-          <TextInput
-            className="flex-1 bg-white text-dark"
-            style={{ borderWidth: 1.5, borderColor: '#ede4ed', borderRadius: 12, paddingHorizontal: 14, paddingVertical: isSmallDevice ? 10 : 12, fontSize: 13.5 }}
-            value={url.value}
-            onChangeText={(v) => updateUrl(url.id, v)}
-            placeholder="https://example.com/article"
-            placeholderTextColor="#c8b2c8"
-            keyboardType="url"
-          />
-          <TouchableOpacity
-            onPress={() => deleteUrl(url.id)}
-            style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: index === 0 ? 'transparent' : '#fff0f3', alignItems: 'center', justifyContent: 'center', opacity: index === 0 ? 0 : 1 }}
-            disabled={index === 0}
-          >
-            <DeleteIcon />
-          </TouchableOpacity>
-        </View>
-      ))}
+        {/* Dropdown List (Expands below selector to avoid clipping) */}
+        {showDropdown && (
+          <View className="bg-white border-[1.5px] border-[#ede4ed] rounded-xl mt-2 overflow-hidden" style={{ maxHeight: 200, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 5, elevation: 5 }}>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {urlGroups.length > 0 ? (
+                urlGroups.map((group, index) => (
+                  <TouchableOpacity
+                    key={group.id}
+                    onPress={() => { 
+                      setUrlGroup(group); 
+                      setShowDropdown(false); 
+                    }}
+                    className="px-4 py-3"
+                    style={{ 
+                      borderBottomWidth: index < urlGroups.length - 1 ? 1 : 0, 
+                      borderBottomColor: '#ede4ed', 
+                      backgroundColor: urlGroup?.id === group.id ? '#f3e6f3' : '#fff' 
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={{ 
+                      fontSize: 14, 
+                      color: urlGroup?.id === group.id ? '#6e226e' : '#1a0a1a', 
+                      fontWeight: urlGroup?.id === group.id ? '600' : '400' 
+                    }}>
+                      {group.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <View className="p-4 items-center">
+                  <Text className="text-[#9e859e]">No URL groups available</Text>
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        )}
+      </View>
+      
+      <Text className="text-muted" style={{ fontSize: 12, marginTop: 8, paddingLeft: 4 }}>
+        {urlGroup ? `${urlGroup.name} (${urlGroup.urls?.length || 0} URLs)` : 'Choose a URL group to auto-fill page URLs'}
+      </Text>
     </View>
   );
 }

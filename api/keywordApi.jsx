@@ -21,11 +21,17 @@ export const fetchKeywords = async (page = 1, perPage = 20, search = '') => {
     if (!response.ok || !data.success) {
       throw new Error(data.message || 'Failed to fetch keywords');
     }
-    return { success: true, data };
+    const meta = data.meta || data.pagination || null;
+    const shows = data.shows || data.data?.shows || [];
+    const hasMore = meta
+      ? page < (meta.last_page || meta.totalPages || 1)
+      : shows.length === perPage;
+    return { success: true, data: { shows }, hasMore };
   } catch (error) {
-    return { success: false, message: error.message };
+    return { success: false, message: error.message, hasMore: false };
   }
 };
+
 
 export const fetchUrlGroups = async () => {
   try {

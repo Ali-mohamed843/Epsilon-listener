@@ -181,14 +181,15 @@
 // }
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StatusBar, Dimensions, ActivityIndicator, Linking } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StatusBar, Dimensions, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { BackIcon, ShareIcon } from '../../../components/Icons';
-import { FilterChips, KpiCard, FindingsCard, DonutLegend, SectionTitle, SimpleBarChart, IntentCard } from '../../../components/ReportComponents';
+import { KpiCard, FindingsCard, DonutLegend, SectionTitle, SimpleBarChart, IntentCard } from '../../../components/ReportComponents';
 import SentimentWordCloudWebView from '../../../components/SentimentWordCloudWebView';
 import HashtagWordCloudWebView from '../../../components/HashtagWordCloudWebView';
 import ActionDropdown from '../../../components/ActionDropdown';
+import ExportDropdown from '../../../components/ExportDropdown';
 import { EyeIcon, UsersIcon, MonitorIcon, ActivityIcon, MessageIcon, ThumbsUpIcon, AtSignIcon, SmileIcon, FileIcon, BarChartIcon } from '../../../components/Icons';
 import ReportFilters from '../../../components/ReportFilters';
 import AISummaryCard from '../../../components/AISummaryCard';
@@ -213,31 +214,28 @@ export default function ReportScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { id } = useLocalSearchParams();
-  
+
   const [reportData, setReportData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [sentimentFilter, setSentimentFilter] = useState('All');
-  const [platformFilter, setPlatformFilter] = useState('All');
   const [chatVisible, setChatVisible] = useState(false);
   const [dateRange, setDateRange] = useState(null);
-  
+
   const isSmallDevice = height < 700;
 
-  // Navigation handlers for ActionDropdown
   const handleSocialMediaPress = useCallback(() => {
     router.push({
       pathname: '/pages/social-media/[hash]',
-      params: { hash: id, name: uiData?.name || 'Report' },
+      params: { hash: id, name: reportData?.profile?.name || 'Report' },
     });
-  }, [router, id]);
+  }, [router, id, reportData]);
 
   const handleAuthorsPress = useCallback(() => {
     router.push({
       pathname: '/pages/authors/[hash]',
-      params: { hash: id, name: uiData?.name || 'Report' },
+      params: { hash: id, name: reportData?.profile?.name || 'Report' },
     });
-  }, [router, id]);
+  }, [router, id, reportData]);
 
   const loadReport = async (range) => {
     setIsLoading(true);
@@ -273,7 +271,7 @@ export default function ReportScreen() {
 
   const uiData = useMemo(() => {
     if (!reportData) return null;
-    
+
     const { profile, stats, platforms, engagementGraph, commentKeywords, postKeywords, hashtags } = reportData;
 
     const commentPos = commentKeywords.percentage?.positive || 0;
@@ -288,7 +286,6 @@ export default function ReportScreen() {
     const postPosWords = (postKeywords.words || []).filter(w => w.sentiment === 'positive');
     const postNegWords = (postKeywords.words || []).filter(w => w.sentiment === 'negative');
 
-    // Keep full hashtag objects with platformContents for linking
     const hashtagList = hashtags || [];
 
     const platformMentions = (platforms || []).map(p => ({
@@ -418,7 +415,6 @@ export default function ReportScreen() {
     );
   }
 
-  // Combine all words for word cloud
   const allCommentWords = [...uiData.posWords, ...uiData.negWords];
   const allPostWords = [...uiData.postPosWords, ...uiData.postNegWords];
 
@@ -426,13 +422,12 @@ export default function ReportScreen() {
     <View className="flex-1 bg-surface2">
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      {/* Header */}
       <View
         className="bg-primary overflow-hidden"
         style={{
           paddingTop: insets.top || StatusBar.currentHeight || 0,
           paddingBottom: 18,
-          paddingHorizontal: width * 0.05,
+          paddingHorizontal: width * 0.04,
         }}
       >
         <View
@@ -445,7 +440,7 @@ export default function ReportScreen() {
             backgroundColor: 'rgba(255,255,255,0.05)',
           }}
         />
-        <View className="flex-row items-center" style={{ marginTop: 6, marginBottom: 14, gap: 10 }}>
+        <View className="flex-row items-center" style={{ marginTop: 6, marginBottom: 14, gap: 8 }}>
           <TouchableOpacity
             onPress={() => router.back()}
             className="items-center justify-center"
@@ -459,31 +454,20 @@ export default function ReportScreen() {
             <BackIcon size={17} />
           </TouchableOpacity>
 
-          {/* Avatar */}
-          <View
-            style={{
-              width: 46,
-              height: 46,
-              borderRadius: 14,
-              backgroundColor: '#9b4d9b',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Text style={{ fontSize: 18, fontWeight: '800', color: '#fff' }}>
-              {uiData.name.charAt(0)}
-            </Text>
-          </View>
-
           <Text
             className="text-white font-extrabold flex-1"
-            style={{ fontSize: isSmallDevice ? 16 : 18, letterSpacing: -0.3 }}
+            style={{ fontSize: isSmallDevice ? 14 : 16, letterSpacing: -0.3 }}
             numberOfLines={1}
           >
             {uiData.name}
           </Text>
 
-          {/* Actions Dropdown */}
+          <ExportDropdown
+            showId={reportData?.profile?.id}
+            dateRange={dateRange}
+            reportName={uiData.name}
+          />
+
           <ActionDropdown
             onSocialMediaPress={handleSocialMediaPress}
             onAuthorsPress={handleAuthorsPress}
@@ -491,7 +475,6 @@ export default function ReportScreen() {
         </View>
       </View>
 
-      {/* Filters */}
       <View
         className="bg-white"
         style={{
@@ -510,16 +493,13 @@ export default function ReportScreen() {
         />
       </View>
 
-      {/* Content */}
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ padding: 16, paddingBottom: 80 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* AI Summary */}
         <AISummaryCard onGenerate={handleGenerateSummary} isSmallDevice={isSmallDevice} />
 
-        {/* Overview Metrics */}
         <SectionTitle>Overview Metrics</SectionTitle>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
           {uiData.kpis.map((kpi, i) => (
@@ -547,43 +527,6 @@ export default function ReportScreen() {
           ))}
         </View>
 
-        {/* AI Findings */}
-        <SectionTitle
-          badge={
-            uiData.riskLevel === 'Low'
-              ? '✓ Low Risk'
-              : uiData.riskLevel === 'Medium'
-              ? '⚠ Medium Risk'
-              : '⚠ High Risk'
-          }
-          badgeBg={
-            uiData.riskLevel === 'Low'
-              ? '#e6f9f4'
-              : uiData.riskLevel === 'Medium'
-              ? '#fff7e0'
-              : '#fff0f3'
-          }
-          badgeColor={
-            uiData.riskLevel === 'Low'
-              ? '#047857'
-              : uiData.riskLevel === 'Medium'
-              ? '#92400e'
-              : '#991b1b'
-          }
-        >
-          AI Findings
-        </SectionTitle>
-        <FindingsCard
-          fakePercent={0}
-          realPercent={100}
-          totalAccounts={uiData.totalAccounts}
-          riskLevel={uiData.riskLevel}
-          riskMessage={`Analysis of ${uiData.totalMentions} mentions shows ${uiData.commentPos}% positive sentiment. ${
-            uiData.commentNeg > 20 ? 'Negative sentiment elevated.' : 'Conversation health stable.'
-          }`}
-        />
-
-        {/* Activity Over Time */}
         <SectionTitle>Activity Over Time</SectionTitle>
         <SimpleBarChart title="Engagements" data={uiData.engData} isSmallDevice={isSmallDevice} />
         <SimpleBarChart title="Views" data={uiData.viewsData} isSmallDevice={isSmallDevice} />
@@ -592,7 +535,6 @@ export default function ReportScreen() {
         <SimpleBarChart title="Comments" data={uiData.commentsData} isSmallDevice={isSmallDevice} />
         <SimpleBarChart title="Avg Reach" data={uiData.reachData} isSmallDevice={isSmallDevice} />
 
-        {/* Comments Sentiment */}
         <SectionTitle>Comments Sentiment</SectionTitle>
         <SentimentWordCloudWebView
           percentage={{ positive: uiData.commentPos, negative: uiData.commentNeg }}
@@ -610,7 +552,6 @@ export default function ReportScreen() {
           ]}
         />
 
-        {/* Posts Sentiment */}
         <SectionTitle>Posts Sentiment</SectionTitle>
         <SentimentWordCloudWebView
           percentage={{ positive: uiData.postPos, negative: uiData.postNeg }}
@@ -618,14 +559,12 @@ export default function ReportScreen() {
           height={isSmallDevice ? 380 : 420}
         />
 
-        {/* Hashtags */}
         <SectionTitle>Hashtags</SectionTitle>
         <HashtagWordCloudWebView
           hashtags={uiData.hashtagList}
-          height={isSmallDevice ? 320 : 380}
+          height={isSmallDevice ? 350 : 400}
         />
 
-        {/* Mentions */}
         <SectionTitle>Mentions</SectionTitle>
         <DonutLegend
           title="By Platform"
@@ -646,7 +585,6 @@ export default function ReportScreen() {
           }))}
         />
 
-        {/* Sentiment Intent */}
         {(uiData.intents.positiveIntents.length > 0 || uiData.intents.negativeIntents.length > 0) && (
           <>
             <SectionTitle>Sentiment Intent</SectionTitle>
@@ -692,7 +630,6 @@ export default function ReportScreen() {
         )}
       </ScrollView>
 
-      {/* AI Chat */}
       <AIChatButton onPress={() => setChatVisible(true)} bottom={Math.max(insets.bottom, 16) + 12} />
       <AIChatModal
         visible={chatVisible}

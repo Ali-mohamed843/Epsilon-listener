@@ -213,10 +213,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import Svg, { Path } from 'react-native-svg';
 import { BackIcon, ShareIcon } from '../../../components/Icons';
-import { FilterChips, KpiCard, FindingsCard, DonutLegend, SectionTitle, SimpleBarChart } from '../../../components/ReportComponents';
+import { KpiCard, FindingsCard, DonutLegend, SectionTitle, SimpleBarChart } from '../../../components/ReportComponents';
 import SentimentWordCloudWebView from '../../../components/SentimentWordCloudWebView';
 import HashtagWordCloudWebView from '../../../components/HashtagWordCloudWebView';
 import ActionDropdown from '../../../components/ActionDropdown';
+import ExportDropdown from '../../../components/ExportDropdown';
 import { EyeIcon, UsersIcon, MonitorIcon, ActivityIcon, MessageIcon, ThumbsUpIcon, AtSignIcon, SmileIcon, FileIcon, BarChartIcon } from '../../../components/Icons';
 import ReportFilters from '../../../components/ReportFilters';
 import AISummaryCard from '../../../components/AISummaryCard';
@@ -237,7 +238,6 @@ const formatNumber = (num) => {
   return n.toString();
 };
 
-// Platform Badges
 const FacebookBadge = ({ size = 10 }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="#1877f2">
     <Path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
@@ -302,26 +302,24 @@ export default function ProfileReportScreen() {
   const [reportData, setReportData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [sentimentFilter, setSentimentFilter] = useState('All');
   const [chatVisible, setChatVisible] = useState(false);
   const [dateRange, setDateRange] = useState(null);
 
   const isSmallDevice = height < 700;
 
-  // Navigation handlers for ActionDropdown
   const handleSocialMediaPress = useCallback(() => {
     router.push({
       pathname: '/pages/social-media/[hash]',
-      params: { hash: id, name: uiData?.profileName || 'Profile' },
+      params: { hash: id, name: reportData?.profile?.name || 'Profile' },
     });
-  }, [router, id]);
+  }, [router, id, reportData]);
 
   const handleAuthorsPress = useCallback(() => {
     router.push({
       pathname: '/pages/authors/[hash]',
-      params: { hash: id, name: uiData?.profileName || 'Profile' },
+      params: { hash: id, name: reportData?.profile?.name || 'Profile' },
     });
-  }, [router, id]);
+  }, [router, id, reportData]);
 
   const loadReport = async (range) => {
     setIsLoading(true);
@@ -366,15 +364,12 @@ export default function ProfileReportScreen() {
     const postPos = postKeywords.percentage?.positive || 0;
     const postNeg = postKeywords.percentage?.negative || 0;
 
-    // Full word objects for word cloud
     const posWordsData = (commentKeywords.words || []).filter(w => w.sentiment === 'positive');
     const negWordsData = (commentKeywords.words || []).filter(w => w.sentiment === 'negative');
 
-    // String arrays for AI context
     const posWords = posWordsData.slice(0, 10).map(w => w.text);
     const negWords = negWordsData.slice(0, 8).map(w => w.text);
 
-    // Keep full hashtag objects
     const hashtagList = hashtags || [];
 
     const platformType = profile.type || 'facebook-profile';
@@ -498,20 +493,18 @@ export default function ProfileReportScreen() {
   const BadgeIcon = platformBadges[reportData.profile.type] || FacebookBadge;
   const avatarBg = platformGradients[reportData.profile.type] || '#1877f2';
 
-  // Combine words for word cloud
   const allCommentWords = [...uiData.posWordsData, ...uiData.negWordsData];
 
   return (
     <View className="flex-1 bg-surface2">
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      {/* Header */}
       <View
         className="bg-primary overflow-hidden"
         style={{
           paddingTop: insets.top || StatusBar.currentHeight || 0,
           paddingBottom: 18,
-          paddingHorizontal: width * 0.05,
+          paddingHorizontal: width * 0.04,
         }}
       >
         <View
@@ -524,7 +517,7 @@ export default function ProfileReportScreen() {
             backgroundColor: 'rgba(255,255,255,0.05)',
           }}
         />
-        <View className="flex-row items-center" style={{ marginTop: 6, marginBottom: 14, gap: 10 }}>
+        <View className="flex-row items-center" style={{ marginTop: 6, marginBottom: 14, gap: 8 }}>
           <TouchableOpacity
             onPress={() => router.back()}
             className="items-center justify-center"
@@ -538,56 +531,20 @@ export default function ProfileReportScreen() {
             <BackIcon size={17} />
           </TouchableOpacity>
 
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
-            {/* Avatar with Badge */}
-            <View
-              style={{
-                width: 46,
-                height: 46,
-                borderRadius: 14,
-                backgroundColor: avatarBg,
-                alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative',
-              }}
-            >
-              <Text style={{ fontSize: 18, fontWeight: '800', color: '#fff' }}>
-                {uiData.profileName.charAt(0)}
-              </Text>
-              <View
-                style={{
-                  position: 'absolute',
-                  bottom: -4,
-                  right: -4,
-                  width: 18,
-                  height: 18,
-                  borderRadius: 9,
-                  backgroundColor: '#fff',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowOpacity: 0.18,
-                  shadowRadius: 4,
-                  elevation: 2,
-                }}
-              >
-                <BadgeIcon />
-              </View>
-            </View>
+          <Text
+            className="text-white font-extrabold flex-1"
+            style={{ fontSize: isSmallDevice ? 14 : 16, letterSpacing: -0.3 }}
+            numberOfLines={1}
+          >
+            {uiData.profileName}
+          </Text>
 
-            <View style={{ flex: 1, minWidth: 0 }}>
-              <Text
-                className="text-white font-extrabold"
-                style={{ fontSize: isSmallDevice ? 15 : 16, letterSpacing: -0.3 }}
-                numberOfLines={1}
-              >
-                {uiData.profileName}
-              </Text>
-            </View>
-          </View>
+          <ExportDropdown
+            showId={reportData?.profile?.id}
+            dateRange={dateRange}
+            reportName={uiData.profileName}
+          />
 
-          {/* Actions Dropdown */}
           <ActionDropdown
             onSocialMediaPress={handleSocialMediaPress}
             onAuthorsPress={handleAuthorsPress}
@@ -595,7 +552,6 @@ export default function ProfileReportScreen() {
         </View>
       </View>
 
-      {/* Filters */}
       <View
         className="bg-white"
         style={{
@@ -614,16 +570,13 @@ export default function ProfileReportScreen() {
         />
       </View>
 
-      {/* Content */}
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ padding: 16, paddingBottom: 80 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* AI Summary */}
         <AISummaryCard onGenerate={handleGenerateSummary} isSmallDevice={isSmallDevice} />
 
-        {/* Overview Metrics */}
         <SectionTitle>Overview Metrics</SectionTitle>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
           {uiData.kpis.map((kpi, i) => (
@@ -651,41 +604,6 @@ export default function ProfileReportScreen() {
           ))}
         </View>
 
-        {/* AI Findings */}
-        <SectionTitle
-          badge={
-            uiData.riskLevel === 'Low'
-              ? '✓ Low Risk'
-              : uiData.riskLevel === 'Medium'
-              ? '⚠ Medium Risk'
-              : '⚠ High Risk'
-          }
-          badgeBg={
-            uiData.riskLevel === 'Low'
-              ? '#e6f9f4'
-              : uiData.riskLevel === 'Medium'
-              ? '#fff7e0'
-              : '#fff0f3'
-          }
-          badgeColor={
-            uiData.riskLevel === 'Low'
-              ? '#047857'
-              : uiData.riskLevel === 'Medium'
-              ? '#92400e'
-              : '#991b1b'
-          }
-        >
-          AI Findings
-        </SectionTitle>
-        <FindingsCard
-          fakePercent={0}
-          realPercent={100}
-          totalAccounts={uiData.followers}
-          riskLevel={uiData.riskLevel}
-          riskMessage={`Analysis of ${uiData.kpis[4]?.value || 0} comments shows ${uiData.commentPos}% positive sentiment. Conversation health stable.`}
-        />
-
-        {/* Activity Over Time */}
         <SectionTitle>Activity Over Time</SectionTitle>
         <SimpleBarChart title="Posts Per Day" data={uiData.postsData} isSmallDevice={isSmallDevice} />
         <SimpleBarChart title="Engagements Per Day" data={uiData.engData} isSmallDevice={isSmallDevice} />
@@ -695,7 +613,6 @@ export default function ProfileReportScreen() {
         <SimpleBarChart title="Comments Per Day" data={uiData.commentsData} isSmallDevice={isSmallDevice} />
         <SimpleBarChart title="Avg Reach Per Day" data={uiData.reachData} isSmallDevice={isSmallDevice} />
 
-        {/* Comments Sentiment Analysis */}
         <SectionTitle>Comments Sentiment Analysis</SectionTitle>
         <SentimentWordCloudWebView
           percentage={{ positive: uiData.commentPos, negative: uiData.commentNeg }}
@@ -713,15 +630,13 @@ export default function ProfileReportScreen() {
           ]}
         />
 
-        {/* Hashtags */}
         <SectionTitle>Hashtags</SectionTitle>
         <HashtagWordCloudWebView
           hashtags={uiData.hashtagList}
-          height={isSmallDevice ? 320 : 380}
+          height={isSmallDevice ? 350 : 400}
         />
       </ScrollView>
 
-      {/* AI Chat */}
       <AIChatButton onPress={() => setChatVisible(true)} bottom={Math.max(insets.bottom, 16) + 12} />
       <AIChatModal
         visible={chatVisible}

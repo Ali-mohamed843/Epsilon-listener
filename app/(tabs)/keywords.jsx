@@ -14,25 +14,24 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Svg, { Path, Rect, Line, Circle, Polyline } from 'react-native-svg';
-import { fetchKeywords } from '../../api/keywordApi';
-import { deleteKeyword, refetchKeyword } from '../../api/keywordApi';
+import { fetchKeywords, deleteKeyword, refetchKeyword } from '../../api/keywordApi';
 
 const { width, height } = Dimensions.get('window');
+const PAGE_SIZE = 20;
 
 const formatShowForUI = (show) => {
   const platforms = [];
   const autoFetch = show.autoFetch || {};
-  if (autoFetch.twitter) platforms.push('Twitter');
-  if (autoFetch.facebook) platforms.push('Facebook');
+  if (autoFetch.twitter)   platforms.push('Twitter');
+  if (autoFetch.facebook)  platforms.push('Facebook');
   if (autoFetch.instagram) platforms.push('Instagram');
-  if (autoFetch.youtube) platforms.push('YouTube');
-  if (autoFetch.tiktok) platforms.push('TikTok');
-  if (autoFetch.linkedin) platforms.push('LinkedIn');
+  if (autoFetch.youtube)   platforms.push('YouTube');
+  if (autoFetch.tiktok)    platforms.push('TikTok');
+  if (autoFetch.linkedin)  platforms.push('LinkedIn');
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
   const startDate = formatDate(show.start_date);
@@ -42,16 +41,17 @@ const formatShowForUI = (show) => {
   const dateRange = startDate && endDate ? `${startDate} – ${endDate}` : 'No date set';
 
   return {
-    id: show.id,
-    name: show.name,
+    id:        show.id,
+    name:      show.name,
     platforms: platforms.length > 0 ? platforms : ['All Platforms'],
     dateRange,
-    status: show.status?.toLowerCase() || 'pending',
-    mentions: show.mentions || '0',
-    hash: show.hash?.hash,
+    status:    show.status?.toLowerCase() || 'pending',
+    mentions:  show.mentions || '0',
+    hash:      show.hash?.hash,
   };
 };
 
+// ── Icons ─────────────────────────────────────────────────────────────────────
 const PlusIcon = ({ size = 14, color = '#6e226e' }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.5} strokeLinecap="round">
     <Line x1={12} y1={5} x2={12} y2={19} /><Line x1={5} y1={12} x2={19} y2={12} />
@@ -64,7 +64,9 @@ const SearchIcon = ({ size = 16, color = '#9e859e' }) => (
 );
 const BellDotIcon = ({ size = 18 }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-    <Path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><Path d="M13.73 21a2 2 0 0 1-3.46 0" /><Circle cx={18} cy={4} r={3} fill="#e8365d" stroke="#e8365d" />
+    <Path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+    <Path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    <Circle cx={18} cy={4} r={3} fill="#e8365d" stroke="#e8365d" />
   </Svg>
 );
 const CompareIcon = ({ size = 18 }) => (
@@ -74,17 +76,21 @@ const CompareIcon = ({ size = 18 }) => (
 );
 const CalendarIcon = ({ size = 11, color = '#9e859e' }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2}>
-    <Rect x={3} y={4} width={18} height={18} rx={2} /><Line x1={16} y1={2} x2={16} y2={6} /><Line x1={8} y1={2} x2={8} y2={6} /><Line x1={3} y1={10} x2={21} y2={10} />
+    <Rect x={3} y={4} width={18} height={18} rx={2} />
+    <Line x1={16} y1={2} x2={16} y2={6} /><Line x1={8} y1={2} x2={8} y2={6} /><Line x1={3} y1={10} x2={21} y2={10} />
   </Svg>
 );
 const EditIcon = ({ size = 13, color = '#fff' }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round">
-    <Path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><Path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    <Path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <Path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
   </Svg>
 );
 const ReportIcon = ({ size = 13, color = '#fff' }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round">
-    <Path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><Polyline points="14 2 14 8 20 8" /><Line x1={16} y1={13} x2={8} y2={13} /><Line x1={16} y1={17} x2={8} y2={17} />
+    <Path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <Polyline points="14 2 14 8 20 8" />
+    <Line x1={16} y1={13} x2={8} y2={13} /><Line x1={16} y1={17} x2={8} y2={17} />
   </Svg>
 );
 const RefreshIcon = ({ size = 13, color = '#6e226e' }) => (
@@ -94,7 +100,9 @@ const RefreshIcon = ({ size = 13, color = '#6e226e' }) => (
 );
 const DeleteIcon = ({ size = 15, color = '#e8365d' }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-    <Polyline points="3 6 5 6 21 6" /><Path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><Path d="M10 11v6" /><Path d="M14 11v6" /><Path d="M9 6V4h6v2" />
+    <Polyline points="3 6 5 6 21 6" />
+    <Path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+    <Path d="M10 11v6" /><Path d="M14 11v6" /><Path d="M9 6V4h6v2" />
   </Svg>
 );
 const LogoIcon = ({ size = 20 }) => (
@@ -103,7 +111,7 @@ const LogoIcon = ({ size = 20 }) => (
   </Svg>
 );
 
-// ── CARD COMPONENT ────────────────────────────────────────────────────────────
+// ── CARD ──────────────────────────────────────────────────────────────────────
 const KeywordCard = ({ keyword, isSmallDevice, onEdit, onUpdate, onDelete, isUpdating, isDeleting }) => {
   const [isChecked, setIsChecked] = useState(false);
   const router = useRouter();
@@ -118,13 +126,16 @@ const KeywordCard = ({ keyword, isSmallDevice, onEdit, onUpdate, onDelete, isUpd
     }
   };
 
-  const statusStyle = getStatusStyle(keyword.status);
-  const cardPadding = isSmallDevice ? 12 : 16;
-  const nameSize = isSmallDevice ? 14 : 15;
+  const statusStyle     = getStatusStyle(keyword.status);
+  const cardPadding     = isSmallDevice ? 12 : 16;
+  const nameSize        = isSmallDevice ? 14 : 15;
   const actionBtnHeight = isSmallDevice ? 32 : 36;
 
   return (
-    <View className="bg-white mb-3 overflow-hidden" style={{ borderRadius: 18, shadowColor: 'rgba(110,34,110,0.06)', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 1, shadowRadius: 10, elevation: 3 }}>
+    <View
+      className="bg-white mb-3 overflow-hidden"
+      style={{ borderRadius: 18, shadowColor: 'rgba(110,34,110,0.06)', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 1, shadowRadius: 10, elevation: 3 }}
+    >
       <View className="flex-row items-start" style={{ padding: cardPadding, paddingBottom: cardPadding - 4, gap: 12 }}>
         <TouchableOpacity
           onPress={() => setIsChecked(!isChecked)}
@@ -155,24 +166,38 @@ const KeywordCard = ({ keyword, isSmallDevice, onEdit, onUpdate, onDelete, isUpd
         </View>
 
         <View style={{ backgroundColor: statusStyle.bg, paddingHorizontal: 9, paddingVertical: 3, borderRadius: 20 }}>
-          <Text style={{ fontSize: 10, fontWeight: '700', color: statusStyle.color, letterSpacing: 0.4 }}>{keyword.status.toUpperCase()}</Text>
+          <Text style={{ fontSize: 10, fontWeight: '700', color: statusStyle.color, letterSpacing: 0.4 }}>
+            {keyword.status.toUpperCase()}
+          </Text>
         </View>
       </View>
 
       <View className="flex-row items-center border-t border-border" style={{ padding: isSmallDevice ? 8 : 10, paddingHorizontal: 12, gap: 7 }}>
-        <TouchableOpacity activeOpacity={0.75} onPress={() => onEdit(keyword.id)} className="flex-1 flex-row items-center justify-center bg-dark" style={{ height: actionBtnHeight, borderRadius: 10, gap: 4 }}>
+        <TouchableOpacity
+          activeOpacity={0.75}
+          onPress={() => onEdit(keyword.id)}
+          className="flex-1 flex-row items-center justify-center bg-dark"
+          style={{ height: actionBtnHeight, borderRadius: 10, gap: 4 }}
+        >
           <EditIcon />
           <Text className="text-white font-bold" style={{ fontSize: 12 }}>Edit</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push(`/pages/report/${keyword.hash}`)} activeOpacity={0.75} className="flex-1 flex-row items-center justify-center bg-primary" style={{ height: actionBtnHeight, borderRadius: 10, gap: 4 }}>
+
+        <TouchableOpacity
+          onPress={() => router.push(`/pages/report/${keyword.hash}`)}
+          activeOpacity={0.75}
+          className="flex-1 flex-row items-center justify-center bg-primary"
+          style={{ height: actionBtnHeight, borderRadius: 10, gap: 4 }}
+        >
           <ReportIcon />
           <Text className="text-white font-bold" style={{ fontSize: 12 }}>Report</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
-          onPress={() => onUpdate(keyword.id)} 
+
+        <TouchableOpacity
+          onPress={() => onUpdate(keyword.id)}
           disabled={isUpdating}
-          activeOpacity={0.75} 
-          className="flex-1 flex-row items-center justify-center bg-primary-xlight" 
+          activeOpacity={0.75}
+          className="flex-1 flex-row items-center justify-center bg-primary-xlight"
           style={{ height: actionBtnHeight, borderRadius: 10, gap: 4 }}
         >
           {isUpdating ? (
@@ -184,11 +209,12 @@ const KeywordCard = ({ keyword, isSmallDevice, onEdit, onUpdate, onDelete, isUpd
             </>
           )}
         </TouchableOpacity>
-        <TouchableOpacity 
-          onPress={() => onDelete(keyword.id)} 
+
+        <TouchableOpacity
+          onPress={() => onDelete(keyword.id)}
           disabled={isDeleting}
-          activeOpacity={0.75} 
-          className="items-center justify-center" 
+          activeOpacity={0.75}
+          className="items-center justify-center"
           style={{ width: actionBtnHeight, height: actionBtnHeight, borderRadius: 10, backgroundColor: '#fff0f3' }}
         >
           {isDeleting ? (
@@ -206,43 +232,66 @@ const KeywordCard = ({ keyword, isSmallDevice, onEdit, onUpdate, onDelete, isUpd
 export default function KeywordsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [keywords, setKeywords] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [refreshing, setRefreshing] = useState(false);
+
+  const [searchQuery, setSearchQuery]     = useState('');
+  const [keywords, setKeywords]           = useState([]);
+  const [isLoading, setIsLoading]         = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [error, setError]                 = useState('');
+  const [refreshing, setRefreshing]       = useState(false);
+  const [page, setPage]                   = useState(1);
+  const [hasMore, setHasMore]             = useState(true);
   const [actionLoading, setActionLoading] = useState({ id: null, type: null });
 
-  const isSmallDevice = height < 700;
+  const isSmallDevice   = height < 700;
   const headerTitleSize = isSmallDevice ? 12 : 16;
-  const searchHeight = isSmallDevice ? 40 : 44;
-  const logoIconSize = isSmallDevice ? 32 : 36;
+  const searchHeight    = isSmallDevice ? 40 : 44;
+  const logoIconSize    = isSmallDevice ? 32 : 36;
 
+  // ── Initial load ─────────────────────────────────────────────────────────
   const loadKeywords = useCallback(async () => {
     setIsLoading(true);
     setError('');
-    const result = await fetchKeywords(1, 50, '');
+    const result = await fetchKeywords(1, PAGE_SIZE, searchQuery);
     if (result.success) {
-      const formatted = result.data.shows.map(formatShowForUI);
-      setKeywords(formatted);
+      setKeywords(result.data.shows.map(formatShowForUI));
+      setHasMore(result.hasMore ?? false);
+      setPage(1);
     } else {
       setError(result.message || 'Failed to load keywords');
     }
     setIsLoading(false);
-  }, []);
+  }, [searchQuery]);
 
   useEffect(() => { loadKeywords(); }, [loadKeywords]);
 
+  // ── Load next page ────────────────────────────────────────────────────────
+  const loadMore = useCallback(async () => {
+    if (isLoadingMore || !hasMore || isLoading) return;
+    setIsLoadingMore(true);
+    const nextPage = page + 1;
+    const result = await fetchKeywords(nextPage, PAGE_SIZE, searchQuery);
+    if (result.success) {
+      setKeywords((prev) => [...prev, ...result.data.shows.map(formatShowForUI)]);
+      setHasMore(result.hasMore ?? false);
+      setPage(nextPage);
+    }
+    setIsLoadingMore(false);
+  }, [isLoadingMore, hasMore, isLoading, page, searchQuery]);
+
+  // ── Pull-to-refresh ───────────────────────────────────────────────────────
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    const result = await fetchKeywords(1, 50, '');
+    const result = await fetchKeywords(1, PAGE_SIZE, searchQuery);
     if (result.success) {
-      const formatted = result.data.shows.map(formatShowForUI);
-      setKeywords(formatted);
+      setKeywords(result.data.shows.map(formatShowForUI));
+      setHasMore(result.hasMore ?? false);
+      setPage(1);
     }
     setRefreshing(false);
-  }, []);
+  }, [searchQuery]);
 
+  // ── Actions ───────────────────────────────────────────────────────────────
   const handleDelete = (id) => {
     Alert.alert('Delete Keyword', 'Are you sure you want to delete this keyword?', [
       { text: 'Cancel', style: 'cancel' },
@@ -259,8 +308,8 @@ export default function KeywordsScreen() {
           } else {
             Alert.alert('Error', result.message || 'Failed to delete keyword');
           }
-        }
-      }
+        },
+      },
     ]);
   };
 
@@ -276,19 +325,28 @@ export default function KeywordsScreen() {
     }
   };
 
+  const handleEditKeyword = (id) => router.push(`/pages/details/${id}`);
+
   const filteredKeywords = keywords.filter((kw) =>
     kw.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleEditKeyword = (id) => {
-    router.push(`/pages/details/${id}`);
+  // ── Scroll handler ────────────────────────────────────────────────────────
+  const handleScroll = ({ nativeEvent }) => {
+    const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+    const nearBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 200;
+    if (nearBottom) loadMore();
   };
 
   return (
     <View className="flex-1 bg-surface2">
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      <View className="bg-primary overflow-hidden" style={{ paddingTop: insets.top || StatusBar.currentHeight || 0, paddingBottom: isSmallDevice ? 20 : 24, paddingHorizontal: width * 0.06 }}>
+      {/* ── Header ── */}
+      <View
+        className="bg-primary overflow-hidden"
+        style={{ paddingTop: insets.top || StatusBar.currentHeight || 0, paddingBottom: isSmallDevice ? 20 : 24, paddingHorizontal: width * 0.06 }}
+      >
         <View className="absolute rounded-full" style={{ top: -50, right: -50, width: 160, height: 160, backgroundColor: 'rgba(255,255,255,0.06)' }} />
         <View className="flex-row items-center" style={{ marginTop: 8, gap: 12 }}>
           <View className="items-center justify-center rounded-xl" style={{ width: logoIconSize, height: logoIconSize, backgroundColor: 'rgba(255,255,255,0.2)' }}>
@@ -304,31 +362,49 @@ export default function KeywordsScreen() {
           <TouchableOpacity onPress={() => router.push('/pages/alerts/')} activeOpacity={0.8} className="items-center justify-center" style={{ width: 40, height: 40, backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: 12 }}>
             <BellDotIcon size={18} />
           </TouchableOpacity>
-          <TouchableOpacity activeOpacity={0.9} onPress={() => router.push('/pages/create-keyword')} className="flex-row items-center bg-white" style={{ paddingHorizontal: 16, paddingVertical: 9, borderRadius: 12, gap: 5 }}>
-            <PlusIcon /><Text className="text-primary font-bold" style={{ fontSize: 13 }}>Create</Text>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={() => router.push('/pages/create-keyword')}
+            className="flex-row items-center bg-white"
+            style={{ paddingHorizontal: 16, paddingVertical: 9, borderRadius: 12, gap: 5 }}
+          >
+            <PlusIcon />
+            <Text className="text-primary font-bold" style={{ fontSize: 13 }}>Create</Text>
           </TouchableOpacity>
         </View>
       </View>
 
+      {/* ── Search ── */}
       <View className="flex-row" style={{ paddingHorizontal: width * 0.05, paddingTop: 16, paddingBottom: 12, gap: 10 }}>
         <View className="flex-1 flex-row items-center bg-white border border-border" style={{ height: searchHeight, borderRadius: 14, paddingHorizontal: 14, gap: 8 }}>
           <SearchIcon />
-          <TextInput className="flex-1 text-dark" style={{ fontSize: 13.5 }} placeholder="Search by name..." placeholderTextColor="#c8b2c8" value={searchQuery} onChangeText={setSearchQuery} />
+          <TextInput
+            className="flex-1 text-dark"
+            style={{ fontSize: 13.5 }}
+            placeholder="Search by name..."
+            placeholderTextColor="#c8b2c8"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
         </View>
       </View>
 
+      {/* ── Count ── */}
       <View className="flex-row items-center justify-between" style={{ paddingHorizontal: width * 0.05, paddingBottom: 10 }}>
         <Text className="text-muted" style={{ fontSize: 12.5 }}>
           <Text className="text-primary font-bold">{isLoading ? '...' : filteredKeywords.length}</Text> keywords found
         </Text>
       </View>
 
-      <ScrollView 
-        className="flex-1" 
-        contentContainerStyle={{ paddingHorizontal: width * 0.05, paddingBottom: 20, flexGrow: isLoading ? 1 : 0 }} 
+      {/* ── List ── */}
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: width * 0.05, paddingBottom: 20, flexGrow: isLoading ? 1 : 0 }}
         showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={400}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#6e226e']} tintColor="#6e226e" titleColor="#6e226e" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#6e226e']} tintColor="#6e226e" />
         }
       >
         {isLoading ? (
@@ -348,18 +424,33 @@ export default function KeywordsScreen() {
             <Text style={{ color: '#9e859e', fontSize: 14 }}>No keywords found</Text>
           </View>
         ) : (
-          filteredKeywords.map((keyword) => (
-            <KeywordCard
-              key={keyword.id}
-              keyword={keyword}
-              isSmallDevice={isSmallDevice}
-              onEdit={handleEditKeyword}
-              onUpdate={handleUpdate}
-              onDelete={handleDelete}
-              isUpdating={actionLoading.id === keyword.id && actionLoading.type === 'update'}
-              isDeleting={actionLoading.id === keyword.id && actionLoading.type === 'delete'}
-            />
-          ))
+          <>
+            {filteredKeywords.map((keyword) => (
+              <KeywordCard
+                key={keyword.id}
+                keyword={keyword}
+                isSmallDevice={isSmallDevice}
+                onEdit={handleEditKeyword}
+                onUpdate={handleUpdate}
+                onDelete={handleDelete}
+                isUpdating={actionLoading.id === keyword.id && actionLoading.type === 'update'}
+                isDeleting={actionLoading.id === keyword.id && actionLoading.type === 'delete'}
+              />
+            ))}
+
+            {/* ── Footer ── */}
+            {isLoadingMore && (
+              <View style={{ paddingVertical: 16, alignItems: 'center' }}>
+                <ActivityIndicator size="small" color="#6e226e" />
+                <Text style={{ marginTop: 6, color: '#9e859e', fontSize: 12 }}>Loading more...</Text>
+              </View>
+            )}
+            {!hasMore && filteredKeywords.length > 0 && (
+              <View style={{ paddingVertical: 16, alignItems: 'center' }}>
+                <Text style={{ color: '#c8b2c8', fontSize: 12 }}>All keywords loaded</Text>
+              </View>
+            )}
+          </>
         )}
       </ScrollView>
     </View>

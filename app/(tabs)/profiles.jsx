@@ -17,6 +17,7 @@ import Svg, { Path, Rect, Line, Circle, Polyline } from 'react-native-svg';
 import { fetchProfiles, refetchProfile, deleteProfile } from '../../api/profileApi';
 
 const { width, height } = Dimensions.get('window');
+const PAGE_SIZE = 20;
 
 const PLATFORM_TABS = [
   { label: 'Facebook',  type: 'facebook-profile' },
@@ -51,6 +52,16 @@ const formatPlatformType = (type) => {
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ');
 };
+
+const mapProfiles = (data) =>
+  data.map((item) => ({
+    id:        item.id,
+    name:      item.name,
+    platform:  formatPlatformType(item.type),
+    dateRange: formatDateRange(item.start_date, item.end_date),
+    followers: formatFollowers(item.followers),
+    hash:      item.hash?.hash,
+  }));
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 const PlusIcon = ({ size = 14, color = '#6e226e' }) => (
@@ -121,23 +132,40 @@ const TwitterBadge = ({ size = 10 }) => (
 );
 
 const platformStyles = {
-  Facebook:  { bg: '#e8f0ff', color: '#1877f2', gradient: '#1877f2', Badge: FacebookBadge },
-  Instagram: { bg: '#fff0f5', color: '#e1306c', gradient: '#e1306c', Badge: InstagramBadge },
-  Twitter:   { bg: '#e8f6ff', color: '#1da1f2', gradient: '#1da1f2', Badge: TwitterBadge },
-  Linkedin:  { bg: '#e8f0ff', color: '#0a66c2', gradient: '#0a66c2', Badge: FacebookBadge },
-  Tiktok:    { bg: '#f0f0f0', color: '#555',    gradient: '#010101', Badge: TwitterBadge },
-  Youtube:   { bg: '#fff0f0', color: '#cc0000', gradient: '#ff0000', Badge: TwitterBadge },
-  Snapchat:  { bg: '#fffde8', color: '#ccaa00', gradient: '#ffcc00', Badge: TwitterBadge },
+  Facebook:  { bg: '#e8f0ff', color: '#1877f2', Badge: FacebookBadge },
+  Instagram: { bg: '#fff0f5', color: '#e1306c', Badge: InstagramBadge },
+  Twitter:   { bg: '#e8f6ff', color: '#1da1f2', Badge: TwitterBadge },
+  Linkedin:  { bg: '#e8f0ff', color: '#0a66c2', Badge: FacebookBadge },
+  Tiktok:    { bg: '#f0f0f0', color: '#555',    Badge: TwitterBadge },
+  Youtube:   { bg: '#fff0f0', color: '#cc0000', Badge: TwitterBadge },
+  Snapchat:  { bg: '#fffde8', color: '#ccaa00', Badge: TwitterBadge },
 };
 
+// ── Platform Tab Bar ──────────────────────────────────────────────────────────
 const PlatformTabBar = ({ selectedTab, onSelect }) => (
   <View style={{ height: 42 }}>
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: width * 0.05, gap: 8, flexDirection: 'row', alignItems: 'center', paddingVertical: 4 }}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{ paddingHorizontal: width * 0.05, gap: 8, flexDirection: 'row', alignItems: 'center', paddingVertical: 4 }}
+    >
       {PLATFORM_TABS.map((tab) => {
         const active = selectedTab === tab.type;
         return (
-          <TouchableOpacity key={tab.label} onPress={() => onSelect(tab.type)} activeOpacity={0.75} style={{ height: 34, paddingHorizontal: 16, borderRadius: 17, backgroundColor: active ? '#6e226e' : '#fff', borderWidth: 1.5, borderColor: active ? '#6e226e' : '#ede4ed', alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontSize: 13, fontWeight: active ? '700' : '500', color: active ? '#fff' : '#9e859e' }}>{tab.label}</Text>
+          <TouchableOpacity
+            key={tab.label}
+            onPress={() => onSelect(tab.type)}
+            activeOpacity={0.75}
+            style={{
+              height: 34, paddingHorizontal: 16, borderRadius: 17,
+              backgroundColor: active ? '#6e226e' : '#fff',
+              borderWidth: 1.5, borderColor: active ? '#6e226e' : '#ede4ed',
+              alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <Text style={{ fontSize: 13, fontWeight: active ? '700' : '500', color: active ? '#fff' : '#9e859e' }}>
+              {tab.label}
+            </Text>
           </TouchableOpacity>
         );
       })}
@@ -145,83 +173,106 @@ const PlatformTabBar = ({ selectedTab, onSelect }) => (
   </View>
 );
 
-// ── PROFILE CARD ──────────────────────────────────────────────────────────────
+// ── Profile Card ──────────────────────────────────────────────────────────────
 const ProfileCard = ({ profile, isSmallDevice, onEdit, onReport, onUpdate, onDelete, isUpdating, isDeleting }) => {
   const [isChecked, setIsChecked] = useState(false);
   const style = platformStyles[profile.platform] || platformStyles.Facebook;
-  const BadgeIcon = style.Badge;
 
-  const avatarSize  = isSmallDevice ? 40 : 46;
-  const nameSize    = isSmallDevice ? 13.5 : 14.5;
   const actionBtnH  = isSmallDevice ? 32 : 36;
   const cardPadding = isSmallDevice ? 12 : 14;
+  const nameSize    = isSmallDevice ? 13.5 : 14.5;
 
   return (
-    <View className="bg-white mb-3 overflow-hidden" style={{ borderRadius: 18, shadowColor: 'rgba(110,34,110,0.06)', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 1, shadowRadius: 10, elevation: 3 }}>
-      <View className="flex-row items-center" style={{ padding: cardPadding, paddingBottom: cardPadding - 2, gap: 12 }}>
-        <TouchableOpacity onPress={() => setIsChecked(!isChecked)} style={{ width: 20, height: 20, borderWidth: 2, borderColor: isChecked ? '#6e226e' : '#ede4ed', borderRadius: 6, backgroundColor: isChecked ? '#6e226e' : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
-          {isChecked && <Svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round"><Polyline points="20 6 9 17 4 12" /></Svg>}
+    <View
+      style={{
+        backgroundColor: '#fff', borderRadius: 18, marginBottom: 12, overflow: 'hidden',
+        shadowColor: 'rgba(110,34,110,0.06)', shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 1, shadowRadius: 10, elevation: 3,
+      }}
+    >
+      {/* Top row */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', padding: cardPadding, paddingBottom: cardPadding - 2, gap: 12 }}>
+        {/* Checkbox */}
+        <TouchableOpacity
+          onPress={() => setIsChecked(!isChecked)}
+          style={{
+            width: 20, height: 20, borderWidth: 2,
+            borderColor: isChecked ? '#6e226e' : '#ede4ed',
+            borderRadius: 6, backgroundColor: isChecked ? '#6e226e' : 'transparent',
+            marginBottom: 30, alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          {isChecked && (
+            <Svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
+              <Polyline points="20 6 9 17 4 12" />
+            </Svg>
+          )}
         </TouchableOpacity>
 
-        <View style={{ width: avatarSize, height: avatarSize, borderRadius: 14, backgroundColor: style.gradient, alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-          <Text className="text-white font-extrabold" style={{ fontSize: isSmallDevice ? 15 : 17 }}>{profile.name.charAt(0)}</Text>
-          <View className="absolute bg-white items-center justify-center" style={{ bottom: -4, right: -4, width: 18, height: 18, borderRadius: 9, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.15, shadowRadius: 4, elevation: 2 }}>
-            <BadgeIcon />
-          </View>
-        </View>
-
-        <View className="flex-1" style={{ minWidth: 0 }}>
-          <Text className="text-dark font-bold" style={{ fontSize: nameSize, marginBottom: 4 }} numberOfLines={1}>{profile.name}</Text>
-          <View className="flex-row items-center flex-wrap" style={{ gap: 8 }}>
+        {/* Name + meta */}
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={{ fontSize: nameSize, fontWeight: '700', color: '#1a1a2e', marginBottom: 4 }} numberOfLines={1}>
+            {profile.name}
+          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
             <View style={{ backgroundColor: style.bg, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20 }}>
               <Text style={{ fontSize: 10.5, fontWeight: '600', color: style.color }}>{profile.platform}</Text>
             </View>
-            <View className="flex-row items-center" style={{ gap: 4 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <CalendarIcon />
-              <Text className="text-muted" style={{ fontSize: 11 }}>{profile.dateRange}</Text>
+              <Text style={{ fontSize: 11, color: '#9e859e' }}>{profile.dateRange}</Text>
             </View>
           </View>
         </View>
 
-        <View className="bg-primary-xlight items-center" style={{ borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6 }}>
-          <Text className="text-primary font-extrabold" style={{ fontSize: 13, lineHeight: 13 }}>{profile.followers}</Text>
-          <Text className="text-muted" style={{ fontSize: 10 }}>followers</Text>
+        {/* Followers badge */}
+        <View style={{ backgroundColor: '#f5edf5', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6, alignItems: 'center' }}>
+          <Text style={{ fontSize: 13, fontWeight: '800', color: '#6e226e', lineHeight: 13 }}>{profile.followers}</Text>
+          <Text style={{ fontSize: 10, color: '#9e859e' }}>followers</Text>
         </View>
       </View>
 
-      <View className="flex-row items-center border-t border-border" style={{ padding: isSmallDevice ? 8 : 10, paddingHorizontal: 12, gap: 7 }}>
-        <TouchableOpacity onPress={() => onEdit(profile.id)} activeOpacity={0.75} className="flex-1 flex-row items-center justify-center bg-dark" style={{ height: actionBtnH, borderRadius: 10, gap: 4 }}>
-          <EditIcon /><Text className="text-white font-bold" style={{ fontSize: 12 }}>Edit</Text>
+      {/* Action buttons */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', borderTopWidth: 1, borderTopColor: '#f0e8f0', padding: isSmallDevice ? 8 : 10, paddingHorizontal: 12, gap: 7 }}>
+        <TouchableOpacity
+          onPress={() => onEdit(profile.id)}
+          activeOpacity={0.75}
+          style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#1a1a2e', height: actionBtnH, borderRadius: 10, gap: 4 }}
+        >
+          <EditIcon />
+          <Text style={{ color: '#fff', fontWeight: '700', fontSize: 12 }}>Edit</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => onReport(profile.hash)} activeOpacity={0.75} className="flex-1 flex-row items-center justify-center bg-primary" style={{ height: actionBtnH, borderRadius: 10, gap: 4 }}>
-          <ReportIcon /><Text className="text-white font-bold" style={{ fontSize: 12 }}>Report</Text>
+
+        <TouchableOpacity
+          onPress={() => onReport(profile.hash)}
+          activeOpacity={0.75}
+          style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#6e226e', height: actionBtnH, borderRadius: 10, gap: 4 }}
+        >
+          <ReportIcon />
+          <Text style={{ color: '#fff', fontWeight: '700', fontSize: 12 }}>Report</Text>
         </TouchableOpacity>
-        
-        {/* UPDATE BUTTON */}
-        <TouchableOpacity 
-          onPress={() => onUpdate(profile.id)} 
-          disabled={isUpdating} 
-          activeOpacity={0.75} 
-          className="flex-1 flex-row items-center justify-center bg-primary-xlight" 
-          style={{ height: actionBtnH, borderRadius: 10, gap: 4 }}
+
+        <TouchableOpacity
+          onPress={() => onUpdate(profile.id)}
+          disabled={isUpdating}
+          activeOpacity={0.75}
+          style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f5edf5', height: actionBtnH, borderRadius: 10, gap: 4 }}
         >
           {isUpdating ? (
             <ActivityIndicator size="small" color="#6e226e" />
           ) : (
             <>
               <RefreshIcon />
-              <Text className="text-primary font-bold" style={{ fontSize: 12 }}>Update</Text>
+              <Text style={{ color: '#6e226e', fontWeight: '700', fontSize: 12 }}>Update</Text>
             </>
           )}
         </TouchableOpacity>
-        
-        {/* DELETE BUTTON */}
-        <TouchableOpacity 
-          onPress={() => onDelete(profile.id)} 
-          disabled={isDeleting} 
-          activeOpacity={0.75} 
-          className="items-center justify-center" 
-          style={{ width: actionBtnH, height: actionBtnH, borderRadius: 10, backgroundColor: '#fff0f3' }}
+
+        <TouchableOpacity
+          onPress={() => onDelete(profile.id)}
+          disabled={isDeleting}
+          activeOpacity={0.75}
+          style={{ width: actionBtnH, height: actionBtnH, borderRadius: 10, backgroundColor: '#fff0f3', alignItems: 'center', justifyContent: 'center' }}
         >
           {isDeleting ? (
             <ActivityIndicator size="small" color="#e8365d" />
@@ -234,39 +285,37 @@ const ProfileCard = ({ profile, isSmallDevice, onEdit, onReport, onUpdate, onDel
   );
 };
 
-// ── MAIN SCREEN ───────────────────────────────────────────────────────────────
+// ── Main Screen ───────────────────────────────────────────────────────────────
 export default function ProfilesScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTab, setSelectedTab] = useState('facebook-profile');
-  const [profiles, setProfiles] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery]     = useState('');
+  const [selectedTab, setSelectedTab]     = useState('facebook-profile');
+  const [profiles, setProfiles]           = useState([]);
+  const [isLoading, setIsLoading]         = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [error, setError]                 = useState('');
+  const [refreshing, setRefreshing]       = useState(false);
+  const [page, setPage]                   = useState(1);
+  const [hasMore, setHasMore]             = useState(true);
   const [actionLoading, setActionLoading] = useState({ id: null, type: null });
 
   const isSmallDevice   = height < 700;
   const headerTitleSize = isSmallDevice ? 14 : 18;
   const searchHeight    = isSmallDevice ? 40 : 44;
   const logoIconSize    = isSmallDevice ? 32 : 36;
+  const platformSlug    = selectedTab.replace('-profile', '');
 
+  // ── Initial / tab / search load ─────────────────────────────────────────────
   const loadProfiles = useCallback(async () => {
     setIsLoading(true);
     setError('');
-    const result = await fetchProfiles(selectedTab, 1, 50, searchQuery);
+    setPage(1);
+    const result = await fetchProfiles(selectedTab, 1, PAGE_SIZE, searchQuery);
     if (result.success) {
-      setProfiles(
-        result.data.map((item) => ({
-          id:        item.id,
-          name:      item.name,
-          platform:  formatPlatformType(item.type),
-          dateRange: formatDateRange(item.start_date, item.end_date),
-          followers: formatFollowers(item.followers),
-          hash:      item.hash?.hash,
-        }))
-      );
+      setProfiles(mapProfiles(result.data));
+      setHasMore(result.hasMore ?? result.data.length === PAGE_SIZE);
     } else {
       setError(result.message || 'Failed to load profiles');
     }
@@ -275,18 +324,33 @@ export default function ProfilesScreen() {
 
   useEffect(() => { loadProfiles(); }, [loadProfiles]);
 
+  // ── Load next page ───────────────────────────────────────────────────────────
+  const loadMore = useCallback(async () => {
+    if (isLoadingMore || !hasMore || isLoading) return;
+    setIsLoadingMore(true);
+    const nextPage = page + 1;
+    const result = await fetchProfiles(selectedTab, nextPage, PAGE_SIZE, searchQuery);
+    if (result.success) {
+      setProfiles((prev) => [...prev, ...mapProfiles(result.data)]);
+      setHasMore(result.hasMore ?? result.data.length === PAGE_SIZE);
+      setPage(nextPage);
+    }
+    setIsLoadingMore(false);
+  }, [isLoadingMore, hasMore, isLoading, page, selectedTab, searchQuery]);
+
+  // ── Pull-to-refresh ──────────────────────────────────────────────────────────
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    const result = await fetchProfiles(selectedTab, 1, 50, searchQuery);
+    setPage(1);
+    const result = await fetchProfiles(selectedTab, 1, PAGE_SIZE, searchQuery);
     if (result.success) {
-      setProfiles(result.data.map((item) => ({
-        id: item.id, name: item.name, platform: formatPlatformType(item.type),
-        dateRange: formatDateRange(item.start_date, item.end_date), followers: formatFollowers(item.followers), hash: item.hash?.hash,
-      })));
+      setProfiles(mapProfiles(result.data));
+      setHasMore(result.hasMore ?? result.data.length === PAGE_SIZE);
     }
     setRefreshing(false);
   }, [selectedTab, searchQuery]);
 
+  // ── Actions ──────────────────────────────────────────────────────────────────
   const handleUpdate = async (id) => {
     setActionLoading({ id, type: 'update' });
     const result = await refetchProfile(id);
@@ -315,103 +379,162 @@ export default function ProfilesScreen() {
           } else {
             Alert.alert('Error', result.message || 'Failed to delete profile');
           }
-        }
-      }
+        },
+      },
     ]);
   };
 
-  const filteredProfiles = profiles.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
-  const handleTabSelect = (type) => { setSelectedTab(type); setProfiles([]); };
+  const handleTabSelect = (type) => {
+    setSelectedTab(type);
+    setProfiles([]);
+    setPage(1);
+    setHasMore(true);
+  };
+
   const handleEdit   = (id) => router.push(`/pages/edit-profile/${id}`);
   const handleReport = (id) => router.push(`/pages/report-profile/${id}`);
-  const platformSlug = selectedTab.replace('-profile', '');
 
+  // ── Scroll handler ───────────────────────────────────────────────────────────
+  const handleScroll = ({ nativeEvent }) => {
+    const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+    const nearBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 250;
+    if (nearBottom) loadMore();
+  };
+
+  // ── Render ───────────────────────────────────────────────────────────────────
   return (
-    <View className="flex-1 bg-surface2">
+    <View style={{ flex: 1, backgroundColor: '#f8f4f8' }}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      <View className="bg-primary overflow-hidden" style={{ paddingTop: insets.top || StatusBar.currentHeight || 0, paddingBottom: isSmallDevice ? 20 : 24, paddingHorizontal: width * 0.06 }}>
-        <View className="absolute rounded-full" style={{ top: -50, right: -50, width: 160, height: 160, backgroundColor: 'rgba(255,255,255,0.06)' }} />
-        <View className="flex-row items-center" style={{ marginTop: 8, gap: 12 }}>
-          <View className="items-center justify-center rounded-xl" style={{ width: logoIconSize, height: logoIconSize, backgroundColor: 'rgba(255,255,255,0.2)' }}>
+      {/* Header */}
+      <View
+        style={{
+          backgroundColor: '#6e226e', overflow: 'hidden',
+          paddingTop: insets.top || StatusBar.currentHeight || 0,
+          paddingBottom: isSmallDevice ? 20 : 24,
+          paddingHorizontal: width * 0.06,
+        }}
+      >
+        <View style={{ position: 'absolute', top: -50, right: -50, width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(255,255,255,0.06)' }} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 12 }}>
+          <View style={{ width: logoIconSize, height: logoIconSize, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 10, alignItems: 'center', justifyContent: 'center' }}>
             <LogoIcon size={logoIconSize * 0.55} />
           </View>
-          <View className="flex-1">
-            <Text className="uppercase" style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', letterSpacing: 1, marginBottom: 2 }}>Monitoring</Text>
-            <Text className="text-white font-extrabold" style={{ fontSize: headerTitleSize, letterSpacing: -0.4 }}>Profiles</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 }}>Monitoring</Text>
+            <Text style={{ fontSize: headerTitleSize, fontWeight: '800', color: '#fff', letterSpacing: -0.4 }}>Profiles</Text>
           </View>
-          <TouchableOpacity onPress={() => router.push('/pages/compare/')} activeOpacity={0.8} className="items-center justify-center" style={{ width: 40, height: 40, backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: 12 }}>
+
+          <TouchableOpacity
+            onPress={() => router.push('/pages/compare/')}
+            activeOpacity={0.8}
+            style={{ width: 40, height: 40, backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: 12, alignItems: 'center', justifyContent: 'center' }}
+          >
             <CompareIcon size={18} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/pages/alerts/')} activeOpacity={0.8} className="items-center justify-center" style={{ width: 40, height: 40, backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: 12 }}>
+
+          <TouchableOpacity
+            onPress={() => router.push('/pages/alerts/')}
+            activeOpacity={0.8}
+            style={{ width: 40, height: 40, backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: 12, alignItems: 'center', justifyContent: 'center' }}
+          >
             <BellDotIcon size={18} />
           </TouchableOpacity>
-          
+
           <TouchableOpacity
             activeOpacity={0.9}
-            className="flex-row items-center bg-white"
             onPress={() => router.push(`/pages/create-profile?platform=${platformSlug}`)}
-            style={{ paddingHorizontal: 16, paddingVertical: 9, borderRadius: 12, gap: 5 }}
+            style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', paddingHorizontal: 16, paddingVertical: 9, borderRadius: 12, gap: 5 }}
           >
             <PlusIcon />
-            <Text className="text-primary font-bold" style={{ fontSize: 13 }}>Create</Text>
+            <Text style={{ color: '#6e226e', fontWeight: '700', fontSize: 13 }}>Create</Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      <View className="flex-row" style={{ paddingHorizontal: width * 0.05, paddingTop: 16, paddingBottom: 6, gap: 10 }}>
-        <View className="flex-1 flex-row items-center bg-white border border-border" style={{ height: searchHeight, borderRadius: 14, paddingHorizontal: 14, gap: 8 }}>
+      {/* Search */}
+      <View style={{ flexDirection: 'row', paddingHorizontal: width * 0.05, paddingTop: 16, paddingBottom: 6, gap: 10 }}>
+        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderWidth: 1, borderColor: '#ede4ed', height: searchHeight, borderRadius: 14, paddingHorizontal: 14, gap: 8 }}>
           <SearchIcon />
-          <TextInput className="flex-1 text-dark" style={{ fontSize: 13.5 }} placeholder="Search profiles..." placeholderTextColor="#c8b2c8" value={searchQuery} onChangeText={setSearchQuery} />
+          <TextInput
+            style={{ flex: 1, fontSize: 13.5, color: '#1a1a2e' }}
+            placeholder="Search profiles..."
+            placeholderTextColor="#c8b2c8"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
         </View>
       </View>
 
+      {/* Platform tabs */}
       <PlatformTabBar selectedTab={selectedTab} onSelect={handleTabSelect} />
 
-      <View className="flex-row items-center justify-between" style={{ paddingHorizontal: width * 0.05, paddingTop: 4, paddingBottom: 8 }}>
-        <Text className="text-muted" style={{ fontSize: 12.5 }}>
-          <Text className="text-primary font-bold">{isLoading ? '…' : filteredProfiles.length}</Text> profiles found
+      {/* Count row */}
+      <View style={{ paddingHorizontal: width * 0.05, paddingTop: 4, paddingBottom: 8 }}>
+        <Text style={{ fontSize: 12.5, color: '#9e859e' }}>
+          <Text style={{ color: '#6e226e', fontWeight: '700' }}>{isLoading ? '…' : profiles.length}</Text> profiles found
         </Text>
       </View>
 
+      {/* List */}
       <ScrollView
-        className="flex-1"
+        style={{ flex: 1 }}
         contentContainerStyle={{ paddingHorizontal: width * 0.05, paddingBottom: 20 }}
         showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={400}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#6e226e']} tintColor="#6e226e" />
         }
       >
         {isLoading ? (
-          <View style={{ paddingVertical: 40, alignItems: 'center' }}>
+          <View style={{ paddingVertical: 60, alignItems: 'center' }}>
             <ActivityIndicator size="large" color="#6e226e" />
             <Text style={{ marginTop: 12, color: '#9e859e', fontSize: 13 }}>Loading profiles…</Text>
           </View>
         ) : error ? (
-          <View style={{ paddingVertical: 40, alignItems: 'center' }}>
+          <View style={{ paddingVertical: 60, alignItems: 'center' }}>
             <Text style={{ color: '#e8365d', fontSize: 14, textAlign: 'center', marginBottom: 12 }}>{error}</Text>
-            <TouchableOpacity onPress={loadProfiles} style={{ backgroundColor: '#6e226e', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10 }}>
+            <TouchableOpacity
+              onPress={loadProfiles}
+              style={{ backgroundColor: '#6e226e', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10 }}
+            >
               <Text style={{ color: '#fff', fontWeight: '700', fontSize: 13 }}>Retry</Text>
             </TouchableOpacity>
           </View>
-        ) : filteredProfiles.length === 0 ? (
-          <View style={{ paddingVertical: 40, alignItems: 'center' }}>
+        ) : profiles.length === 0 ? (
+          <View style={{ paddingVertical: 60, alignItems: 'center' }}>
             <Text style={{ color: '#9e859e', fontSize: 14 }}>No profiles found</Text>
           </View>
         ) : (
-          filteredProfiles.map((profile) => (
-            <ProfileCard
-              key={profile.id}
-              profile={profile}
-              isSmallDevice={isSmallDevice}
-              onEdit={handleEdit}
-              onReport={handleReport}
-              onUpdate={handleUpdate}
-              onDelete={handleDelete}
-              isUpdating={actionLoading.id === profile.id && actionLoading.type === 'update'}
-              isDeleting={actionLoading.id === profile.id && actionLoading.type === 'delete'}
-            />
-          ))
+          <>
+            {profiles.map((profile) => (
+              <ProfileCard
+                key={profile.id}
+                profile={profile}
+                isSmallDevice={isSmallDevice}
+                onEdit={handleEdit}
+                onReport={handleReport}
+                onUpdate={handleUpdate}
+                onDelete={handleDelete}
+                isUpdating={actionLoading.id === profile.id && actionLoading.type === 'update'}
+                isDeleting={actionLoading.id === profile.id && actionLoading.type === 'delete'}
+              />
+            ))}
+
+            {/* Load more footer */}
+            {isLoadingMore && (
+              <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+                <ActivityIndicator size="small" color="#6e226e" />
+                <Text style={{ marginTop: 8, color: '#9e859e', fontSize: 12 }}>Loading more…</Text>
+              </View>
+            )}
+            {!hasMore && profiles.length > 0 && (
+              <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+                <Text style={{ color: '#c8b2c8', fontSize: 12 }}>All profiles loaded</Text>
+              </View>
+            )}
+          </>
         )}
       </ScrollView>
     </View>

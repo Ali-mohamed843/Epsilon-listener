@@ -16,15 +16,22 @@ export const fetchByType = async (type, page, perPage, search) => {
     { method: 'GET', headers }
   );
   const data = await res.json();
-  return data.success && data.shows ? data.shows : [];
+  // Return both the items and pagination meta
+  return {
+    shows: data.success && data.shows ? data.shows : [],
+    meta: data.meta || data.pagination || null,
+  };
 };
 
-export const fetchProfiles = async (selectedType, page = 1, perPage = 50, search = '') => {
+export const fetchProfiles = async (selectedType, page = 1, perPage = 20, search = '') => {
   try {
-    const shows = await fetchByType(selectedType, page, perPage, search);
-    return { success: true, data: shows };
+    const { shows, meta } = await fetchByType(selectedType, page, perPage, search);
+    const hasMore = meta
+      ? page < (meta.last_page || meta.totalPages || 1)
+      : shows.length === perPage; // fallback: if full page returned, assume more exist
+    return { success: true, data: shows, hasMore };
   } catch (error) {
-    return { success: false, message: error.message };
+    return { success: false, message: error.message, hasMore: false };
   }
 };
 

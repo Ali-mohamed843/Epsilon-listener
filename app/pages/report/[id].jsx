@@ -563,6 +563,7 @@ export default function ReportScreen() {
         <HashtagWordCloudWebView
           hashtags={uiData.hashtagList}
           height={isSmallDevice ? 350 : 400}
+          showHash={id}
         />
 
         <SectionTitle>Mentions</SectionTitle>

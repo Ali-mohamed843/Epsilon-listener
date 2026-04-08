@@ -359,9 +359,9 @@ export default function KeywordsScreen() {
           <TouchableOpacity onPress={() => router.push('/pages/compare/')} activeOpacity={0.8} className="items-center justify-center" style={{ width: 40, height: 40, backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: 12 }}>
             <CompareIcon size={18} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/pages/alerts/')} activeOpacity={0.8} className="items-center justify-center" style={{ width: 40, height: 40, backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: 12 }}>
+          {/* <TouchableOpacity onPress={() => router.push('/pages/alerts/')} activeOpacity={0.8} className="items-center justify-center" style={{ width: 40, height: 40, backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: 12 }}>
             <BellDotIcon size={18} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <TouchableOpacity
             activeOpacity={0.9}
             onPress={() => router.push('/pages/create-keyword')}

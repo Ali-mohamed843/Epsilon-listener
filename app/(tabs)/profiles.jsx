@@ -433,13 +433,13 @@ export default function ProfilesScreen() {
             <CompareIcon size={18} />
           </TouchableOpacity>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() => router.push('/pages/alerts/')}
             activeOpacity={0.8}
             style={{ width: 40, height: 40, backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: 12, alignItems: 'center', justifyContent: 'center' }}
           >
             <BellDotIcon size={18} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <TouchableOpacity
             activeOpacity={0.9}

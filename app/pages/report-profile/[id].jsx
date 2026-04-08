@@ -634,6 +634,7 @@ export default function ProfileReportScreen() {
         <HashtagWordCloudWebView
           hashtags={uiData.hashtagList}
           height={isSmallDevice ? 350 : 400}
+          showHash={id}
         />
       </ScrollView>
 

@@ -50,3 +50,32 @@ export const fetchKeywordReport = async (hash, dateRange) => {
     return { success: false, message: error.message };
   }
 };
+
+export const fetchKeywordContents = async (hash, keyword, sentiment, page = 1, perPage = 10) => {
+  try {
+    const headers = await getHeaders();
+    const params = new URLSearchParams({
+      page: String(page),
+      perPage: String(perPage),
+      hash,
+      keyword,
+      sentiment,
+    });
+    
+    const res = await fetch(
+      `${BASE_URL}/contents/keywords?${params.toString()}`,
+      { headers }
+    );
+    const json = await res.json();
+    
+    if (!json.success) throw new Error(json.message || 'Failed to load keyword contents');
+    
+    return {
+      success: true,
+      data: json.data || [],
+      pageInfo: json.pageInfo || { totalItems: 0, totalPages: 1, currentPage: 1 },
+    };
+  } catch (error) {
+    return { success: false, message: error.message, data: [], pageInfo: {} };
+  }
+};

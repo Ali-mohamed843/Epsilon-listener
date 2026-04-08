@@ -618,6 +618,7 @@ export default function ProfileReportScreen() {
           percentage={{ positive: uiData.commentPos, negative: uiData.commentNeg }}
           words={allCommentWords}
           height={isSmallDevice ? 380 : 420}
+          showHash={id} 
         />
         <DonutLegend
           title="Sentiment Breakdown"

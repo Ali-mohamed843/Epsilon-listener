@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 export { default as SentimentWordCloudWebView } from './SentimentWordCloudWebView';
+import { WebView } from 'react-native-webview';
+import { StyleSheet } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -307,111 +309,106 @@ export const SectionTitle = ({ children, badge, badgeBg, badgeColor }) => (
 );
 
 export const SimpleBarChart = ({ title, data, isSmallDevice }) => {
-  const [activeIndex, setActiveIndex] = useState(null);
-  
   const safeData = data || [];
   if (safeData.length === 0) return null;
 
-  const maxVal = Math.max(...safeData.map(d => d.value), 1);
+  const labels = JSON.stringify(safeData.map(d => d.label));
+  const values = JSON.stringify(safeData.map(d => d.value));
+  const chartTitle = JSON.stringify(title || '');
+  const height = isSmallDevice ? 220 : 260;
 
-  const handlePress = (index) => {
-    setActiveIndex(activeIndex === index ? null : index);
-  };
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #fff; padding: 16px 16px 8px; font-family: -apple-system, sans-serif; }
+  .title { font-size: 13px; font-weight: 800; color: #1a0a1a; margin-bottom: 12px; }
+  .chart-wrap { position: relative; width: 100%; height: ${height}px; }
+</style>
+</head>
+<body>
+  <div class="title">${chartTitle}</div>
+  <div class="chart-wrap">
+    <canvas id="c"></canvas>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"><\/script>
+  <script>
+    const labels = ${labels};
+    const values = ${values};
+    new Chart(document.getElementById('c'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: '#6e226e',
+          hoverBackgroundColor: '#9b3d9b',
+          borderRadius: 4,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ' ' + ctx.parsed.y
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            border: { display: false },
+            ticks: {
+              color: '#9e859e',
+              font: { size: labels.length > 14 ? 7 : labels.length > 7 ? 8 : 9 },
+              maxRotation: 0,
+              autoSkip: labels.length > 20,
+            }
+          },
+          y: {
+            grid: {
+              color: 'rgba(0,0,0,0.06)',
+              drawBorder: false,
+            },
+            border: { display: false, dash: [4, 4] },
+            ticks: {
+              color: '#9e859e',
+              font: { size: 10 },
+              maxTicksLimit: 5,
+            },
+            beginAtZero: true,
+          }
+        }
+      }
+    });
+  <\/script>
+</body>
+</html>`;
 
   return (
-    <View
-      className="bg-white"
-      style={{
-        borderRadius: 16,
-        padding: isSmallDevice ? 12 : 16,
-        marginBottom: 10,
-        shadowColor: 'rgba(110,34,110,0.06)',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 1,
-        shadowRadius: 10,
-        elevation: 2,
-      }}
-    >
-      {title && (
-        <Text style={{ fontSize: isSmallDevice ? 11 : 13, fontWeight: '800', color: '#1a0a1a', marginBottom: 12 }}>
-          {title}
-        </Text>
-      )}
-
-      {/* Tooltip */}
-      {activeIndex !== null && (
-        <View style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: '#f3e6f3',
-          paddingVertical: 6,
-          paddingHorizontal: 12,
-          borderRadius: 8,
-          marginBottom: 8,
-          borderWidth: 1,
-          borderColor: '#ede4ed',
-        }}>
-          <Text style={{ fontSize: 12, fontWeight: '600', color: '#6e226e' }}>
-            {safeData[activeIndex].label}
-          </Text>
-          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#6e226e', marginHorizontal: 8 }} />
-          <Text style={{ fontSize: 14, fontWeight: '800', color: '#1a0a1a' }}>
-            {safeData[activeIndex].value}
-          </Text>
-        </View>
-      )}
-
-      {/* Bars + Labels */}
-      <View style={{ flexDirection: 'row', alignItems: 'flex-end', height: isSmallDevice ? 130 : 160 }}>
-        {safeData.map((d, i) => (
-          <TouchableOpacity
-            key={i}
-            activeOpacity={0.8}
-            onPress={() => handlePress(i)}
-            style={{
-              flex: 1,
-              alignItems: 'center',
-              justifyContent: 'flex-end',
-              height: '100%',
-            }}
-          >
-            {/* Bar */}
-            <View style={{ flex: 1, width: '100%', alignItems: 'center', justifyContent: 'flex-end' }}>
-              <View
-                style={{
-                  width: '60%',
-                  height: `${(d.value / maxVal) * 100}%`,
-                  backgroundColor: activeIndex === i ? '#9b3d9b' : '#6e226e',
-                  borderRadius: 4,
-                  minHeight: 4,
-                  borderWidth: activeIndex === i ? 1.5 : 0,
-                  borderColor: '#fff',
-                }}
-              />
-            </View>
-
-            {/* Date label below bar */}
-            <Text
-              style={{
-                fontSize: safeData.length > 14 ? 7 : safeData.length > 7 ? 8 : 9,
-                color: activeIndex === i ? '#6e226e' : '#9e859e',
-                fontWeight: activeIndex === i ? '700' : '500',
-                marginTop: 4,
-                textAlign: 'center',
-              }}
-              numberOfLines={1}
-            >
-              {safeData.length > 14
-                ? d.label.split(' ')[1]   
-                : safeData.length > 7
-                ? d.label.replace(' ', '\n')
-                : d.label                   
-              }
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+    <View style={{
+      borderRadius: 16,
+      overflow: 'hidden',
+      marginBottom: 10,
+      backgroundColor: '#fff',
+      shadowColor: 'rgba(110,34,110,0.06)',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 1,
+      shadowRadius: 10,
+      elevation: 2,
+    }}>
+      <WebView
+        source={{ html }}
+        style={{ height: height + 56, width: '100%' }}
+        scrollEnabled={false}
+        javaScriptEnabled={true}
+      />
     </View>
   );
 };

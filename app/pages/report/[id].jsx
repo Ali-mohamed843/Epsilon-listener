@@ -540,6 +540,7 @@ export default function ReportScreen() {
           percentage={{ positive: uiData.commentPos, negative: uiData.commentNeg }}
           words={allCommentWords}
           height={isSmallDevice ? 380 : 420}
+          showHash={id} 
         />
         <DonutLegend
           title="Comments Breakdown"
@@ -557,6 +558,7 @@ export default function ReportScreen() {
           percentage={{ positive: uiData.postPos, negative: uiData.postNeg }}
           words={allPostWords}
           height={isSmallDevice ? 380 : 420}
+          showHash={id} 
         />
 
         <SectionTitle>Hashtags</SectionTitle>

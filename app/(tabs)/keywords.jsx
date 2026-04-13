@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Svg, { Path, Rect, Line, Circle, Polyline } from 'react-native-svg';
 import { fetchKeywords, deleteKeyword, refetchKeyword } from '../../api/keywordApi';
+import { fetchHomeData } from '../../api/homeApi';
 
 const { width, height } = Dimensions.get('window');
 const PAGE_SIZE = 20;
@@ -136,6 +137,9 @@ const KeywordCard = ({ keyword, isSmallDevice, onEdit, onUpdate, onDelete, isUpd
       className="bg-white mb-3 overflow-hidden"
       style={{ borderRadius: 18, shadowColor: 'rgba(110,34,110,0.06)', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 1, shadowRadius: 10, elevation: 3 }}
     >
+      <TouchableOpacity
+      onPress={() => router.push(`/pages/report/${keyword.hash}`)}
+      >
       <View className="flex-row items-start" style={{ padding: cardPadding, paddingBottom: cardPadding - 4, gap: 12 }}>
         <TouchableOpacity
           onPress={() => setIsChecked(!isChecked)}
@@ -224,6 +228,7 @@ const KeywordCard = ({ keyword, isSmallDevice, onEdit, onUpdate, onDelete, isUpd
           )}
         </TouchableOpacity>
       </View>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -242,26 +247,37 @@ export default function KeywordsScreen() {
   const [page, setPage]                   = useState(1);
   const [hasMore, setHasMore]             = useState(true);
   const [actionLoading, setActionLoading] = useState({ id: null, type: null });
+  const [totalItems, setTotalItems] = useState(null);
 
   const isSmallDevice   = height < 700;
   const headerTitleSize = isSmallDevice ? 12 : 16;
   const searchHeight    = isSmallDevice ? 40 : 44;
   const logoIconSize    = isSmallDevice ? 32 : 36;
 
-  // ── Initial load ─────────────────────────────────────────────────────────
   const loadKeywords = useCallback(async () => {
-    setIsLoading(true);
-    setError('');
-    const result = await fetchKeywords(1, PAGE_SIZE, searchQuery);
-    if (result.success) {
-      setKeywords(result.data.shows.map(formatShowForUI));
-      setHasMore(result.hasMore ?? false);
-      setPage(1);
-    } else {
-      setError(result.message || 'Failed to load keywords');
-    }
-    setIsLoading(false);
-  }, [searchQuery]);
+  setIsLoading(true);
+  setError('');
+
+  // Fetch both list and total count in parallel
+  const [listResult, homeData] = await Promise.allSettled([
+    fetchKeywords(1, PAGE_SIZE, searchQuery),
+    fetchHomeData({ perPage: 1 }),  // perPage:1 is enough, we only need pageInfo
+  ]);
+
+  if (listResult.status === 'fulfilled' && listResult.value.success) {
+    setKeywords(listResult.value.data.shows.map(formatShowForUI));
+    setHasMore(listResult.value.hasMore ?? false);
+    setPage(1);
+  } else {
+    setError(listResult.value?.message || 'Failed to load keywords');
+  }
+
+  if (homeData.status === 'fulfilled') {
+    setTotalItems(homeData.value.keywordPageInfo.totalItems);
+  }
+
+  setIsLoading(false);
+}, [searchQuery]);
 
   useEffect(() => { loadKeywords(); }, [loadKeywords]);
 
@@ -390,9 +406,11 @@ export default function KeywordsScreen() {
       </View>
 
       {/* ── Count ── */}
-      <View className="flex-row items-center justify-between" style={{ paddingHorizontal: width * 0.05, paddingBottom: 10 }}>
+      <View style={{ paddingHorizontal: width * 0.05, paddingBottom: 10 }}>
         <Text className="text-muted" style={{ fontSize: 12.5 }}>
-          <Text className="text-primary font-bold">{isLoading ? '...' : filteredKeywords.length}</Text> keywords found
+          <Text className="text-primary font-bold">
+            {isLoading ? '...' : (searchQuery ? filteredKeywords.length : (totalItems ?? filteredKeywords.length))}
+          </Text> keywords found
         </Text>
       </View>
 

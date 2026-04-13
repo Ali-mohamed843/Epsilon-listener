@@ -12,9 +12,10 @@ import {
   Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, router } from 'expo-router';
 import Svg, { Path, Rect, Line, Circle, Polyline } from 'react-native-svg';
 import { fetchProfiles, refetchProfile, deleteProfile } from '../../api/profileApi';
+import { fetchHomeData } from '../../api/homeApi';
 
 const { width, height } = Dimensions.get('window');
 const PAGE_SIZE = 20;
@@ -190,6 +191,9 @@ const ProfileCard = ({ profile, isSmallDevice, onEdit, onReport, onUpdate, onDel
         shadowOpacity: 1, shadowRadius: 10, elevation: 3,
       }}
     >
+      <TouchableOpacity
+      onPress={() => router.push(`/pages/report/${profile.hash}`)}
+      >
       {/* Top row */}
       <View style={{ flexDirection: 'row', alignItems: 'center', padding: cardPadding, paddingBottom: cardPadding - 2, gap: 12 }}>
         {/* Checkbox */}
@@ -281,6 +285,7 @@ const ProfileCard = ({ profile, isSmallDevice, onEdit, onReport, onUpdate, onDel
           )}
         </TouchableOpacity>
       </View>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -307,22 +312,31 @@ export default function ProfilesScreen() {
   const logoIconSize    = isSmallDevice ? 32 : 36;
   const platformSlug    = selectedTab.replace('-profile', '');
 
-  // ── Initial / tab / search load ─────────────────────────────────────────────
-  const loadProfiles = useCallback(async () => {
-    setIsLoading(true);
-    setError('');
-    setPage(1);
-    const result = await fetchProfiles(selectedTab, 1, PAGE_SIZE, searchQuery);
-    if (result.success) {
-      setProfiles(mapProfiles(result.data));
-      setHasMore(result.hasMore ?? result.data.length === PAGE_SIZE);
-    } else {
-      setError(result.message || 'Failed to load profiles');
-    }
-    setIsLoading(false);
-  }, [selectedTab, searchQuery]);
+  const [totalItems, setTotalItems] = useState(null);
 
-  useEffect(() => { loadProfiles(); }, [loadProfiles]);
+const loadProfiles = useCallback(async () => {
+  setIsLoading(true);
+  setError('');
+  setPage(1);
+
+  const [listResult, homeData] = await Promise.allSettled([
+    fetchProfiles(selectedTab, 1, PAGE_SIZE, searchQuery),
+    fetchHomeData({ perPage: 1 }),
+  ]);
+
+  if (listResult.status === 'fulfilled' && listResult.value.success) {
+    setProfiles(mapProfiles(listResult.value.data));
+    setHasMore(listResult.value.hasMore ?? listResult.value.data.length === PAGE_SIZE);
+  } else {
+    setError(listResult.value?.message || 'Failed to load profiles');
+  }
+
+  if (homeData.status === 'fulfilled') {
+    setTotalItems(homeData.value.profilePageInfo.totalItems);
+  }
+
+  setIsLoading(false);
+}, [selectedTab, searchQuery]);
 
   // ── Load next page ───────────────────────────────────────────────────────────
   const loadMore = useCallback(async () => {
@@ -472,7 +486,9 @@ export default function ProfilesScreen() {
       {/* Count row */}
       <View style={{ paddingHorizontal: width * 0.05, paddingTop: 4, paddingBottom: 8 }}>
         <Text style={{ fontSize: 12.5, color: '#9e859e' }}>
-          <Text style={{ color: '#6e226e', fontWeight: '700' }}>{isLoading ? '…' : profiles.length}</Text> profiles found
+          <Text style={{ color: '#6e226e', fontWeight: '700' }}>
+            {isLoading ? '…' : (searchQuery ? profiles.length : (totalItems ?? profiles.length))}
+          </Text> profiles found
         </Text>
       </View>
 

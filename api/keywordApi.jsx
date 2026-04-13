@@ -26,7 +26,8 @@ export const fetchKeywords = async (page = 1, perPage = 20, search = '') => {
     const hasMore = meta
       ? page < (meta.last_page || meta.totalPages || 1)
       : shows.length === perPage;
-    return { success: true, data: { shows }, hasMore };
+    const totalItems = meta ? (meta.total || meta.totalItems || 0) : shows.length;
+    return { success: true, data: { shows }, hasMore, totalItems };
   } catch (error) {
     return { success: false, message: error.message, hasMore: false };
   }

@@ -38,6 +38,15 @@ const DashboardIcon = ({ color, size = 22 }) => (
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
 
+  const tabBarStyle = {
+    backgroundColor: '#ffffff',
+    borderTopWidth: 1,
+    borderTopColor: '#f0e8f0',
+    paddingTop: 8,
+    paddingBottom: insets.bottom > 0 ? insets.bottom : 16,
+    height: 64 + (insets.bottom > 0 ? insets.bottom : 0),
+  };
+
   return (
     <Tabs
       screenOptions={{
@@ -51,32 +60,16 @@ export default function TabsLayout() {
           fontWeight: '500',
           marginTop: 2,
         },
-        tabBarStyle: {
-          backgroundColor: '#ffffff',
-          borderTopWidth: 1,
-          borderTopColor: '#f0e8f0',
-          paddingTop: 8,
-          paddingBottom: insets.bottom > 0 ? insets.bottom : 16,
-          height: 64 + (insets.bottom > 0 ? insets.bottom : 0),
-        },
+        tabBarStyle,
       }}
     >
+      {/* ── Main tabs ── */}
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
           tabBarIcon: ({ color, focused }) => (
-            <View
-              style={{
-                width: 37,
-                height: 37,
-                borderRadius: 12,
-                marginBottom: 5,
-                backgroundColor: focused ? '#f3e6f3' : 'transparent',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
+            <View style={{ width: 37, height: 37, borderRadius: 12, marginBottom: 5, backgroundColor: focused ? '#f3e6f3' : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
               <HomeIcon color={color} />
             </View>
           ),
@@ -87,17 +80,7 @@ export default function TabsLayout() {
         options={{
           title: 'Keywords',
           tabBarIcon: ({ color, focused }) => (
-            <View
-              style={{
-                width: 37,
-                height: 37,
-                borderRadius: 12,
-                marginBottom: 5,
-                backgroundColor: focused ? '#f3e6f3' : 'transparent',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
+            <View style={{ width: 37, height: 37, borderRadius: 12, marginBottom: 5, backgroundColor: focused ? '#f3e6f3' : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
               <KeywordsIcon color={color} />
             </View>
           ),
@@ -108,17 +91,7 @@ export default function TabsLayout() {
         options={{
           title: 'Profiles',
           tabBarIcon: ({ color, focused }) => (
-            <View
-              style={{
-                width: 37,
-                height: 37,
-                borderRadius: 12,
-                marginBottom: 5,
-                backgroundColor: focused ? '#f3e6f3' : 'transparent',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
+            <View style={{ width: 37, height: 37, borderRadius: 12, marginBottom: 5, backgroundColor: focused ? '#f3e6f3' : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
               <ProfilesIcon color={color} />
             </View>
           ),
@@ -129,20 +102,18 @@ export default function TabsLayout() {
         options={{
           title: 'Dashboard',
           tabBarIcon: ({ color, focused }) => (
-            <View
-              style={{
-                width: 37,
-                height: 37,
-                borderRadius: 12,
-                marginBottom: 5,
-                backgroundColor: focused ? '#f3e6f3' : 'transparent',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
+            <View style={{ width: 37, height: 37, borderRadius: 12, marginBottom: 5, backgroundColor: focused ? '#f3e6f3' : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
               <DashboardIcon color={color} />
             </View>
           ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="pages"
+        options={{
+          href: null,
+          tabBarStyle: { display: 'none' },
         }}
       />
     </Tabs>

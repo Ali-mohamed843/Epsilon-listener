@@ -16,7 +16,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Svg, { Path, Line, Polyline } from 'react-native-svg';
-import { createProfile } from '../../api/profileApi';
+import { createProfile } from '../../../api/profileApi';
 
 const CloseIcon = () => (
   <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="#6e226e" strokeWidth={2.5} strokeLinecap="round">

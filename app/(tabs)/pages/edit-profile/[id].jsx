@@ -13,10 +13,10 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { BackIcon, ArrowRightIcon, CheckIcon } from '../../../components/Icons';
-import StepIndicator from '../../../components/StepIndicator';
-import { Step1, Step2 } from '../../../components/EditProfileSteps';
-import { fetchProfileById, updateProfile } from '../../../api/profileApi';
+import { BackIcon, ArrowRightIcon, CheckIcon } from '../../../../components/Icons';
+import StepIndicator from '../../../../components/StepIndicator';
+import { Step1, Step2 } from '../../../../components/EditProfileSteps';
+import { fetchProfileById, updateProfile } from '../../../../api/profileApi';
 
 const { width, height } = Dimensions.get('window');
 

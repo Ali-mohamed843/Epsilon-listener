@@ -10,13 +10,13 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { BackIcon, BellIcon, SparkleIcon, RefreshCWIcon } from '../../../components/Icons';
-import AlertCard from '../../../components/AlertCard';
-import AlertsEmptyState from '../../../components/AlertsEmptyState';
-import AIChatButton from '../../../components/AIChatButton';
-import AIChatModal from '../../../components/AIChatModal';
-import { generateAlerts } from '../../../services/aiService';
-import { fetchAlertsData, formatDataForAI } from '../../../services/alertsData';
+import { BackIcon, BellIcon, SparkleIcon, RefreshCWIcon } from '../../../../components/Icons';
+import AlertCard from '../../../../components/AlertCard';
+import AlertsEmptyState from '../../../../components/AlertsEmptyState';
+import AIChatButton from '../../../../components/AIChatButton';
+import AIChatModal from '../../../../components/AIChatModal';
+import { generateAlerts } from '../../../../services/aiService';
+import { fetchAlertsData, formatDataForAI } from '../../../../services/alertsData';
 
 const { width, height } = Dimensions.get('window');
 

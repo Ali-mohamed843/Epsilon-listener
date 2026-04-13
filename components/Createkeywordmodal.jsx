@@ -257,113 +257,368 @@ const Step1 = ({ form, setForm, nameError }) => {
 // STEP 2 — Intent & Drivers
 // ═════════════════════════════════════════════════════════════════════════════
 
-const Step2 = ({ form, setForm, urlGroups, loadingGroups }) => (
-  <ScrollView showsVerticalScrollIndicator={false}>
-    <ToggleRow
-      label="Customize Your Intent and Drivers"
-      value={form.customized_intents}
-      onChange={(v) => setForm((p) => ({ ...p, customized_intents: v }))}
-    />
-    <ToggleRow
-      label="Use AI to Detect Intent and Drivers"
-      value={form.ai_intents}
-      onChange={(v) => setForm((p) => ({ ...p, ai_intents: v }))}
-    />
+const Step2 = ({ form, setForm, urlGroups, loadingGroups }) => {
+  const addIntent = () => setForm((p) => ({ ...p, intents: [...p.intents, ''] }));
+  const updateIntent = (i, text) => {
+    const updated = [...form.intents];
+    updated[i] = text;
+    setForm((p) => ({ ...p, intents: updated }));
+  };
+  const removeIntent = (i) =>
+    setForm((p) => ({ ...p, intents: p.intents.filter((_, idx) => idx !== i) }));
 
-    {/* URL Group picker */}
-    <View style={{ marginTop: 24 }}>
-      <Text style={styles.fieldLabel}>Page URL Group</Text>
-      {loadingGroups ? (
-        <ActivityIndicator size="small" color="#6e226e" style={{ marginTop: 12 }} />
-      ) : (
-        <View style={{ gap: 8, marginTop: 8 }}>
-          {/* None option */}
-          <TouchableOpacity
-            onPress={() => setForm((p) => ({ ...p, url_group: null, pageUrls: [] }))}
-            activeOpacity={0.8}
-            style={{
-              flexDirection: 'row', alignItems: 'center', gap: 10,
-              padding: 12, borderRadius: 12, borderWidth: 1.5,
-              borderColor: !form.url_group ? '#6e226e' : '#ede4ed',
-              backgroundColor: !form.url_group ? '#faf3fa' : '#fff',
-            }}
-          >
-            <View style={{
-              width: 18, height: 18, borderRadius: 9, borderWidth: 2,
-              borderColor: !form.url_group ? '#6e226e' : '#ccc',
-              backgroundColor: !form.url_group ? '#6e226e' : 'transparent',
-              alignItems: 'center', justifyContent: 'center',
-            }}>
-              {!form.url_group && <CheckIcon />}
-            </View>
-            <Text style={{ fontSize: 13.5, color: '#1a0a1a', fontWeight: '500' }}>None</Text>
-          </TouchableOpacity>
+  const addDriver = () => setForm((p) => ({ ...p, drivers: [...p.drivers, ''] }));
+  const updateDriver = (i, text) => {
+    const updated = [...form.drivers];
+    updated[i] = text;
+    setForm((p) => ({ ...p, drivers: updated }));
+  };
+  const removeDriver = (i) =>
+    setForm((p) => ({ ...p, drivers: p.drivers.filter((_, idx) => idx !== i) }));
 
-          {urlGroups.map((g) => {
-            const selected = form.url_group?.value === g.id;
-            return (
+  return (
+    <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      {/* Customize Intent toggle */}
+      <ToggleRow
+        label="Customize Your Intent and Drivers"
+        value={form.customized_intents}
+        onChange={(v) => {
+          setForm((p) => ({
+            ...p,
+            customized_intents: v,
+            // mutually exclusive — turn off AI when custom is on
+            ai_intents: v ? false : p.ai_intents,
+            intents: v && p.intents.length === 0 ? [''] : p.intents,
+            drivers: v && p.drivers.length === 0 ? [''] : p.drivers,
+          }));
+        }}
+      />
+
+      {/* Intents + Drivers inputs — shown only when customized_intents is ON */}
+      {form.customized_intents && (
+        <>
+          {/* Intents */}
+          <View style={{ marginTop: 16, marginBottom: 12 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <Text style={styles.fieldLabel}>Intents</Text>
               <TouchableOpacity
-                key={g.id}
-                onPress={() => setForm((p) => ({
-                  ...p,
-                  url_group: { label: g.name, value: g.id, urls: g.urls },
-                  pageUrls: g.urls,
-                }))}
-                activeOpacity={0.8}
-                style={{
-                  flexDirection: 'row', alignItems: 'center', gap: 10,
-                  padding: 12, borderRadius: 12, borderWidth: 1.5,
-                  borderColor: selected ? '#6e226e' : '#ede4ed',
-                  backgroundColor: selected ? '#faf3fa' : '#fff',
-                }}
+                onPress={addIntent}
+                style={{ backgroundColor: '#1a0a1a', paddingHorizontal: 14, paddingVertical: 7, borderRadius: 10 }}
               >
-                <View style={{
-                  width: 18, height: 18, borderRadius: 9, borderWidth: 2,
-                  borderColor: selected ? '#6e226e' : '#ccc',
-                  backgroundColor: selected ? '#6e226e' : 'transparent',
-                  alignItems: 'center', justifyContent: 'center',
-                }}>
-                  {selected && <CheckIcon />}
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 13.5, color: '#1a0a1a', fontWeight: '600' }}>{g.name}</Text>
-                  <Text style={{ fontSize: 11, color: '#9e859e', marginTop: 2 }}>{g.urls.length} URLs</Text>
-                </View>
+                <Text style={{ color: '#fff', fontWeight: '700', fontSize: 12 }}>Add More</Text>
               </TouchableOpacity>
-            );
-          })}
-        </View>
-      )}
-    </View>
-    <View style={{ height: 24 }} />
-  </ScrollView>
-);
+            </View>
+            {form.intents.map((intent, i) => (
+              <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <TextInput
+                  value={intent}
+                  onChangeText={(t) => updateIntent(i, t)}
+                  placeholder={`Intent ${i + 1}`}
+                  placeholderTextColor="#c8b2c8"
+                  style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                />
+                {form.intents.length > 1 && (
+                  <TouchableOpacity onPress={() => removeIntent(i)} style={{ padding: 6 }}>
+                    <TrashIcon />
+                  </TouchableOpacity>
+                )}
+              </View>
+            ))}
+          </View>
 
+          {/* Drivers */}
+          <View style={{ marginBottom: 12 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <Text style={styles.fieldLabel}>Drivers</Text>
+              <TouchableOpacity
+                onPress={addDriver}
+                style={{ backgroundColor: '#1a0a1a', paddingHorizontal: 14, paddingVertical: 7, borderRadius: 10 }}
+              >
+                <Text style={{ color: '#fff', fontWeight: '700', fontSize: 12 }}>Add More</Text>
+              </TouchableOpacity>
+            </View>
+            {form.drivers.map((driver, i) => (
+              <View key={i} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <TextInput
+                  value={driver}
+                  onChangeText={(t) => updateDriver(i, t)}
+                  placeholder={`Driver ${i + 1}`}
+                  placeholderTextColor="#c8b2c8"
+                  style={[styles.input, { flex: 1, marginBottom: 0 }]}
+                />
+                {form.drivers.length > 1 && (
+                  <TouchableOpacity onPress={() => removeDriver(i)} style={{ padding: 6 }}>
+                    <TrashIcon />
+                  </TouchableOpacity>
+                )}
+              </View>
+            ))}
+          </View>
+        </>
+      )}
+
+      {/* AI Intent toggle — disabled when customized_intents is ON */}
+      <ToggleRow
+        label="Use AI to Detect Intent and Drivers"
+        value={form.ai_intents}
+        onChange={(v) => setForm((p) => ({ ...p, ai_intents: v, customized_intents: v ? false : p.customized_intents }))}
+        disabled={form.customized_intents}
+      />
+
+      {/* URL Group picker */}
+      <View style={{ marginTop: 24 }}>
+        <Text style={styles.fieldLabel}>Page URL Group</Text>
+        {loadingGroups ? (
+          <ActivityIndicator size="small" color="#6e226e" style={{ marginTop: 12 }} />
+        ) : (
+          <View style={{ gap: 8, marginTop: 8 }}>
+            <TouchableOpacity
+              onPress={() => setForm((p) => ({ ...p, url_group: null, pageUrls: [] }))}
+              activeOpacity={0.8}
+              style={{
+                flexDirection: 'row', alignItems: 'center', gap: 10,
+                padding: 12, borderRadius: 12, borderWidth: 1.5,
+                borderColor: !form.url_group ? '#6e226e' : '#ede4ed',
+                backgroundColor: !form.url_group ? '#faf3fa' : '#fff',
+              }}
+            >
+              <View style={{
+                width: 18, height: 18, borderRadius: 9, borderWidth: 2,
+                borderColor: !form.url_group ? '#6e226e' : '#ccc',
+                backgroundColor: !form.url_group ? '#6e226e' : 'transparent',
+                alignItems: 'center', justifyContent: 'center',
+              }}>
+                {!form.url_group && <CheckIcon />}
+              </View>
+              <Text style={{ fontSize: 13.5, color: '#1a0a1a', fontWeight: '500' }}>None</Text>
+            </TouchableOpacity>
+
+            {urlGroups.map((g) => {
+              const selected = form.url_group?.value === g.id;
+              return (
+                <TouchableOpacity
+                  key={g.id}
+                  onPress={() => setForm((p) => ({
+                    ...p,
+                    url_group: { label: g.name, value: g.id, urls: g.urls },
+                    pageUrls: g.urls,
+                  }))}
+                  activeOpacity={0.8}
+                  style={{
+                    flexDirection: 'row', alignItems: 'center', gap: 10,
+                    padding: 12, borderRadius: 12, borderWidth: 1.5,
+                    borderColor: selected ? '#6e226e' : '#ede4ed',
+                    backgroundColor: selected ? '#faf3fa' : '#fff',
+                  }}
+                >
+                  <View style={{
+                    width: 18, height: 18, borderRadius: 9, borderWidth: 2,
+                    borderColor: selected ? '#6e226e' : '#ccc',
+                    backgroundColor: selected ? '#6e226e' : 'transparent',
+                    alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {selected && <CheckIcon />}
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 13.5, color: '#1a0a1a', fontWeight: '600' }}>{g.name}</Text>
+                    <Text style={{ fontSize: 11, color: '#9e859e', marginTop: 2 }}>{g.urls.length} URLs</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
+      </View>
+      <View style={{ height: 24 }} />
+    </ScrollView>
+  );
+};
 // ═════════════════════════════════════════════════════════════════════════════
 // STEP 3 — Advanced Settings
 // ═════════════════════════════════════════════════════════════════════════════
 
-const Step3 = ({ form, setForm }) => (
-  <ScrollView showsVerticalScrollIndicator={false}>
-    <ToggleRow
-      label="Live Updates"
-      value={form.isLiveUpdates}
-      onChange={(v) => setForm((p) => ({ ...p, isLiveUpdates: v }))}
-    />
-    <ToggleRow
-      label="Refetch Engagement"
-      value={form.refetchEngagment}
-      onChange={(v) => setForm((p) => ({ ...p, refetchEngagment: v }))}
-    />
-    <ToggleRow
-      label="Stock Market Analysis"
-      value={form.stock_analysis}
-      onChange={(v) => setForm((p) => ({ ...p, stock_analysis: v }))}
-    />
-    <View style={{ height: 24 }} />
-  </ScrollView>
-);
+const REFETCH_PERIODS = [
+  { label: '8 Hours',  value: 8 },
+  { label: '9 Hours',  value: 9 },
+  { label: '10 Hours', value: 10 },
+  { label: '12 Hours', value: 12 },
+  { label: '24 Hours', value: 24 },
+  { label: '48 Hours', value: 48 },
+];
 
+const Step3 = ({ form, setForm }) => {
+  const [periodOpen, setPeriodOpen] = useState(false);
+  const [companyOpen, setCompanyOpen] = useState(false);
+
+  // Placeholder company list — replace with real API data if needed
+  const COMPANIES = [
+    { label: 'Apple',   value: 'apple' },
+    { label: 'Google',  value: 'google' },
+    { label: 'Tesla',   value: 'tesla' },
+    { label: 'Amazon',  value: 'amazon' },
+  ];
+
+  const selectedPeriod   = REFETCH_PERIODS.find((p) => p.value === form.refetchPeriod);
+  const selectedCompany  = COMPANIES.find((c) => c.value === form.stock_related_company);
+
+  return (
+    <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+      {/* Live Updates */}
+      <ToggleRow
+        label="Live Updates"
+        value={form.isLiveUpdates}
+        onChange={(v) => setForm((p) => ({ ...p, isLiveUpdates: v }))}
+      />
+
+      {/* Refetch Engagement */}
+      <ToggleRow
+        label="Refetch Engagment"
+        value={form.refetchEngagment}
+        onChange={(v) => setForm((p) => ({ ...p, refetchEngagment: v, refetchPeriod: v ? p.refetchPeriod : null }))}
+      />
+
+      {/* Period dropdown — shown only when refetchEngagment is ON */}
+      {form.refetchEngagment && (
+        <View style={{ marginBottom: 16 }}>
+          <Text style={[styles.fieldLabel, { marginBottom: 6 }]}>Period In Hours</Text>
+
+          {/* Trigger */}
+          <TouchableOpacity
+            onPress={() => { setPeriodOpen((o) => !o); setCompanyOpen(false); }}
+            activeOpacity={0.8}
+            style={{
+              height: 48, borderWidth: 1.5, borderColor: periodOpen ? '#6e226e' : '#ede4ed',
+              borderRadius: 12, paddingHorizontal: 14, flexDirection: 'row',
+              alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#faf7fa',
+            }}
+          >
+            <Text style={{ fontSize: 13.5, color: selectedPeriod ? '#1a0a1a' : '#c8b2c8' }}>
+              {selectedPeriod ? selectedPeriod.label : 'null Hours'}
+            </Text>
+            {/* Chevron */}
+            <Svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="#9e859e" strokeWidth={2} strokeLinecap="round">
+              <Polyline points={periodOpen ? '18 15 12 9 6 15' : '6 9 12 15 18 9'} />
+            </Svg>
+          </TouchableOpacity>
+
+          {/* Dropdown list */}
+          {periodOpen && (
+            <View style={{
+              borderWidth: 1.5, borderColor: '#ede4ed', borderRadius: 12,
+              backgroundColor: '#fff', marginTop: 4,
+              shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.08, shadowRadius: 12, elevation: 6,
+            }}>
+              {REFETCH_PERIODS.map((p, i) => {
+                const selected = form.refetchPeriod === p.value;
+                return (
+                  <TouchableOpacity
+                    key={p.value}
+                    onPress={() => { setForm((prev) => ({ ...prev, refetchPeriod: p.value })); setPeriodOpen(false); }}
+                    style={{
+                      paddingHorizontal: 16, paddingVertical: 14,
+                      backgroundColor: selected ? '#f5edf5' : '#fff',
+                      borderBottomWidth: i < REFETCH_PERIODS.length - 1 ? 1 : 0,
+                      borderBottomColor: '#f5eef5',
+                      borderRadius: i === 0 ? 12 : i === REFETCH_PERIODS.length - 1 ? 12 : 0,
+                    }}
+                  >
+                    <Text style={{ fontSize: 14, color: selected ? '#6e226e' : '#1a0a1a', fontWeight: selected ? '700' : '400' }}>
+                      {p.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* Stock Market Analysis */}
+      <ToggleRow
+        label="Stock Market Analysis"
+        value={form.stock_analysis}
+        onChange={(v) => setForm((p) => ({
+          ...p,
+          stock_analysis: v,
+          stock_related_company: v ? p.stock_related_company : null,
+          stock_related_start_date: v ? p.stock_related_start_date : null,
+          stock_related_end_date: v ? p.stock_related_end_date : null,
+        }))}
+      />
+
+      {/* Stock fields — shown only when stock_analysis is ON */}
+      {form.stock_analysis && (
+        <View style={{ marginTop: 8, marginBottom: 16 }}>
+          {/* Company dropdown */}
+          <Text style={[styles.fieldLabel, { marginBottom: 6 }]}>Company</Text>
+          <TouchableOpacity
+            onPress={() => { setCompanyOpen((o) => !o); setPeriodOpen(false); }}
+            activeOpacity={0.8}
+            style={{
+              height: 48, borderWidth: 1.5, borderColor: companyOpen ? '#6e226e' : '#ede4ed',
+              borderRadius: 12, paddingHorizontal: 14, flexDirection: 'row',
+              alignItems: 'center', justifyContent: 'space-between',
+              backgroundColor: '#faf7fa', marginBottom: 4,
+            }}
+          >
+            <Text style={{ fontSize: 13.5, color: selectedCompany ? '#1a0a1a' : '#c8b2c8' }}>
+              {selectedCompany ? selectedCompany.label : 'Select...'}
+            </Text>
+            <Svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="#9e859e" strokeWidth={2} strokeLinecap="round">
+              <Polyline points={companyOpen ? '18 15 12 9 6 15' : '6 9 12 15 18 9'} />
+            </Svg>
+          </TouchableOpacity>
+
+          {companyOpen && (
+            <View style={{
+              borderWidth: 1.5, borderColor: '#ede4ed', borderRadius: 12,
+              backgroundColor: '#fff', marginBottom: 12,
+              shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.08, shadowRadius: 12, elevation: 6,
+            }}>
+              {COMPANIES.map((c, i) => {
+                const selected = form.stock_related_company === c.value;
+                return (
+                  <TouchableOpacity
+                    key={c.value}
+                    onPress={() => { setForm((prev) => ({ ...prev, stock_related_company: c.value })); setCompanyOpen(false); }}
+                    style={{
+                      paddingHorizontal: 16, paddingVertical: 14,
+                      backgroundColor: selected ? '#f5edf5' : '#fff',
+                      borderBottomWidth: i < COMPANIES.length - 1 ? 1 : 0,
+                      borderBottomColor: '#f5eef5',
+                    }}
+                  >
+                    <Text style={{ fontSize: 14, color: selected ? '#6e226e' : '#1a0a1a', fontWeight: selected ? '700' : '400' }}>
+                      {c.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
+
+          {/* Stock date range */}
+          <View style={{ flexDirection: 'row', gap: 12, marginTop: 4 }}>
+            <DateField
+              label="Start Date"
+              value={form.stock_related_start_date || ''}
+              onChange={(t) => setForm((p) => ({ ...p, stock_related_start_date: t }))}
+            />
+            <DateField
+              label="End Date"
+              value={form.stock_related_end_date || ''}
+              onChange={(t) => setForm((p) => ({ ...p, stock_related_end_date: t }))}
+            />
+          </View>
+        </View>
+      )}
+
+      <View style={{ height: 24 }} />
+    </ScrollView>
+  );
+};
 // ═════════════════════════════════════════════════════════════════════════════
 // MAIN MODAL
 // ═════════════════════════════════════════════════════════════════════════════
@@ -375,12 +630,13 @@ const INITIAL_FORM = {
   exact_keyword: false,
   start_date: '',
   end_date: '',
-  // step 2
+  intents: [''],   
+  drivers: [''],
   customized_intents: false,
   ai_intents: true,
   url_group: null,
   pageUrls: [],
-  // step 3
+  refetchPeriod: null, 
   isLiveUpdates: false,
   refetchEngagment: false,
   stock_analysis: false,

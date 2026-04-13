@@ -14,17 +14,17 @@ import {
   BackIcon,
   SparkleIcon,
   RefreshCWIcon,
-} from '../../../components/Icons';
+} from '../../../../components/Icons';
 import {
   WinnerBanner,
   HeadToHeadCard,
   SentimentComparisonCard,
   RiskComparisonCard,
   TakeawaysCard,
-} from '../../../components/CompareResultCards';
-import AIChatButton from '../../../components/AIChatButton';
-import AIChatModal from '../../../components/AIChatModal';
-import { generateComparison, chatWithReport } from '../../../services/aiService';
+} from '../../../../components/CompareResultCards';
+import AIChatButton from '../../../../components/AIChatButton';
+import AIChatModal from '../../../../components/AIChatModal';
+import { generateComparison, chatWithReport } from '../../../../services/aiService';
 
 var { width, height } = Dimensions.get('window');
 

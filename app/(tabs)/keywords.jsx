@@ -16,6 +16,7 @@ import { useRouter } from 'expo-router';
 import Svg, { Path, Rect, Line, Circle, Polyline } from 'react-native-svg';
 import { fetchKeywords, deleteKeyword, refetchKeyword } from '../../api/keywordApi';
 import { fetchHomeData } from '../../api/homeApi';
+import { useFocusEffect } from 'expo-router';
 
 const { width, height } = Dimensions.get('window');
 const PAGE_SIZE = 20;
@@ -279,7 +280,11 @@ export default function KeywordsScreen() {
   setIsLoading(false);
 }, [searchQuery]);
 
-  useEffect(() => { loadKeywords(); }, [loadKeywords]);
+  useFocusEffect(
+  useCallback(() => {
+    loadKeywords();
+  }, [loadKeywords])
+);
 
   // ── Load next page ────────────────────────────────────────────────────────
   const loadMore = useCallback(async () => {

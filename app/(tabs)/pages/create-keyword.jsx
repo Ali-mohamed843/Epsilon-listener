@@ -13,10 +13,10 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { BackIcon, ArrowRightIcon, CheckIcon } from '../../components/Icons';
-import StepIndicator from '../../components/StepIndicator';
-import { Step1, Step2, Step3 } from '../../components/EditKeywordSteps';
-import { fetchUrlGroups, createKeyword } from '../../api/keywordApi';
+import { BackIcon, ArrowRightIcon, CheckIcon } from '../../../components/Icons';
+import StepIndicator from '../../../components/StepIndicator';
+import { Step1, Step2, Step3 } from '../../../components/EditKeywordSteps';
+import { fetchUrlGroups, createKeyword } from '../../../api/keywordApi';
 
 const { width, height } = Dimensions.get('window');
 
@@ -50,6 +50,17 @@ export default function CreateKeywordScreen() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [urlGroup, setUrlGroup] = useState(null);
+  const [customizedIntents, setCustomizedIntents] = useState(false);
+  const [aiIntents, setAiIntents]                 = useState(true);
+  const [intents, setIntents]                     = useState(['']);
+  const [drivers, setDrivers]                     = useState(['']);
+  const [isLiveUpdates, setIsLiveUpdates]         = useState(false);
+  const [refetchEngagment, setRefetchEngagment]   = useState(false);
+  const [refetchPeriod, setRefetchPeriod]         = useState(null);
+  const [stockAnalysis, setStockAnalysis]         = useState(false);
+  const [stockCompany, setStockCompany]           = useState(null);
+  const [stockStartDate, setStockStartDate]       = useState('');
+  const [stockEndDate, setStockEndDate]           = useState('');
 
   const isSmallDevice = height < 700;
   const headerTitleSize = isSmallDevice ? 18 : 20;
@@ -92,44 +103,39 @@ export default function CreateKeywordScreen() {
   const handleSave = async () => {
     setIsSaving(true);
     const payload = {
-      name: keywordName.trim(),
-      keywords: keywords.map((k) => k.value.trim()).filter(Boolean),
-      autoFetch: {
-        twitter: selectedPlatforms.includes('twitter'),
-        facebook: selectedPlatforms.includes('facebook'),
-        instagram: selectedPlatforms.includes('instagram'),
-        youtube: selectedPlatforms.includes('youtube'),
-        tiktok: selectedPlatforms.includes('tiktok'),
-        linkedin: selectedPlatforms.includes('linkedin'),
-        snapchat: selectedPlatforms.includes('snapchat'),
-      },
-      start_date: startDate || null,
-      end_date: endDate || null,
-      url_group: urlGroup?.id || null,
-      pageUrls: urlGroup?.urls || [],
-      exact_keyword: false,
-      isLiveUpdates: false,
-      refetchEngagment: false,
-      stock_analysis: false,
-      useIntentsAndDrivers: false,
-      customized_intents: false,
-      ai_intents: false,
-      rangeFactor: { from: 25, to: 30, videos: 1 },
-      rangeFactorFrom: 25,
-      rangeFactorTo: 30,
-      videosReachFactor: 1,
-      categories: [],
-      contactIds: [],
-      whatsappGroupIds: [],
-      intents: [],
-      drivers: [],
-      expiry_date: null,
-      refetchPeriod: null,
-      stock_related_company: null,
-      stock_related_end_date: null,
-      stock_related_start_date: null,
-      type: null,
-    };
+  name: keywordName.trim(),
+  keywords: keywords.map((k) => k.value.trim()).filter(Boolean),
+  autoFetch: {
+    twitter:   selectedPlatforms.includes('twitter'),
+    facebook:  selectedPlatforms.includes('facebook'),
+    instagram: selectedPlatforms.includes('instagram'),
+    youtube:   selectedPlatforms.includes('youtube'),
+    tiktok:    selectedPlatforms.includes('tiktok'),
+    linkedin:  selectedPlatforms.includes('linkedin'),
+    snapchat:  selectedPlatforms.includes('snapchat'),
+  },
+  start_date: startDate || null,
+  end_date:   endDate   || null,
+  url_group:  urlGroup?.id || null,
+  pageUrls:   urlGroup?.urls || [],
+  customized_intents:   customizedIntents,
+  ai_intents:           aiIntents,
+  useIntentsAndDrivers: customizedIntents || aiIntents,
+  intents:  intents.filter(Boolean),
+  drivers:  drivers.filter(Boolean),
+  isLiveUpdates,
+  refetchEngagment,
+  refetchPeriod,
+  stock_analysis:            stockAnalysis,
+  stock_related_company:     stockCompany,
+  stock_related_start_date:  stockStartDate || null,
+  stock_related_end_date:    stockEndDate   || null,
+  exact_keyword: false,
+  rangeFactor: { from: 25, to: 30, videos: 1 },
+  rangeFactorFrom: 25, rangeFactorTo: 30, videosReachFactor: 1,
+  categories: [], contactIds: [], whatsappGroupIds: [],
+  expiry_date: null, type: null,
+};
 
     const result = await createKeyword(payload);
     setIsSaving(false);
@@ -213,35 +219,38 @@ export default function CreateKeywordScreen() {
           keyboardShouldPersistTaps="handled"
         >
           {currentStep === 1 && (
-            <Step1
-              keywordName={keywordName}
-              setKeywordName={setKeywordName}
-              selectedPlatforms={selectedPlatforms}
-              togglePlatform={togglePlatform}
-              keywords={keywords}
-              addKeyword={addKeyword}
-              updateKeyword={updateKeywordFn}
-              deleteKeyword={deleteKeywordFn}
-              isSmallDevice={isSmallDevice}
-            />
-          )}
-          {currentStep === 2 && (
-            <Step2
-              startDate={startDate}
-              setStartDate={setStartDate}
-              endDate={endDate}
-              setEndDate={setEndDate}
-              isSmallDevice={isSmallDevice}
-            />
-          )}
-          {currentStep === 3 && (
-            <Step3
-              urlGroup={urlGroup}
-              setUrlGroup={setUrlGroup}
-              urlGroups={urlGroups}
-              isSmallDevice={isSmallDevice}
-            />
-          )}
+  <Step1
+    keywordName={keywordName} setKeywordName={setKeywordName}
+    selectedPlatforms={selectedPlatforms} togglePlatform={togglePlatform}
+    keywords={keywords} addKeyword={addKeyword}
+    updateKeyword={updateKeywordFn} deleteKeyword={deleteKeywordFn}
+    startDate={startDate} setStartDate={setStartDate}
+    endDate={endDate} setEndDate={setEndDate}
+    isSmallDevice={isSmallDevice}
+  />
+)}
+{currentStep === 2 && (
+  <Step2
+    urlGroup={urlGroup} setUrlGroup={setUrlGroup}
+    urlGroups={urlGroups} isSmallDevice={isSmallDevice}
+  />
+)}
+{currentStep === 3 && (
+  <Step3
+    customizedIntents={customizedIntents} setCustomizedIntents={setCustomizedIntents}
+    aiIntents={aiIntents} setAiIntents={setAiIntents}
+    intents={intents} setIntents={setIntents}
+    drivers={drivers} setDrivers={setDrivers}
+    isLiveUpdates={isLiveUpdates} setIsLiveUpdates={setIsLiveUpdates}
+    refetchEngagment={refetchEngagment} setRefetchEngagment={setRefetchEngagment}
+    refetchPeriod={refetchPeriod} setRefetchPeriod={setRefetchPeriod}
+    stockAnalysis={stockAnalysis} setStockAnalysis={setStockAnalysis}
+    stockCompany={stockCompany} setStockCompany={setStockCompany}
+    stockStartDate={stockStartDate} setStockStartDate={setStockStartDate}
+    stockEndDate={stockEndDate} setStockEndDate={setStockEndDate}
+    isSmallDevice={isSmallDevice}
+  />
+)}
         </ScrollView>
 
         <View

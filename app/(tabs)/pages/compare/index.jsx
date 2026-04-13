@@ -10,9 +10,9 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { BackIcon, SparkleIcon } from '../../../components/Icons';
-import CompareSelector from '../../../components/CompareSelector';
-import { fetchAlertsData } from '../../../services/alertsData';
+import { BackIcon, SparkleIcon } from '../../../../components/Icons';
+import CompareSelector from '../../../../components/CompareSelector';
+import { fetchAlertsData } from '../../../../services/alertsData';
 
 const { width, height } = Dimensions.get('window');
 const MAX_SELECTIONS = 3;

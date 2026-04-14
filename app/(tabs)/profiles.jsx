@@ -319,20 +319,14 @@ const loadProfiles = useCallback(async () => {
   setError('');
   setPage(1);
 
-  const [listResult, homeData] = await Promise.allSettled([
-    fetchProfiles(selectedTab, 1, PAGE_SIZE, searchQuery),
-    fetchHomeData({ perPage: 1 }),
-  ]);
+  const result = await fetchProfiles(selectedTab, 1, PAGE_SIZE, searchQuery);
 
-  if (listResult.status === 'fulfilled' && listResult.value.success) {
-    setProfiles(mapProfiles(listResult.value.data));
-    setHasMore(listResult.value.hasMore ?? listResult.value.data.length === PAGE_SIZE);
+  if (result.success) {
+    setProfiles(mapProfiles(result.data));
+    setHasMore(result.hasMore ?? result.data.length === PAGE_SIZE);
+    setTotalItems(result.totalItems ?? result.data.length); // ← from the tab's own response
   } else {
-    setError(listResult.value?.message || 'Failed to load profiles');
-  }
-
-  if (homeData.status === 'fulfilled') {
-    setTotalItems(homeData.value.profilePageInfo.totalItems);
+    setError(result.message || 'Failed to load profiles');
   }
 
   setIsLoading(false);
@@ -414,6 +408,10 @@ const loadProfiles = useCallback(async () => {
     const nearBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 250;
     if (nearBottom) loadMore();
   };
+
+  useEffect(() => {
+  loadProfiles();
+}, [loadProfiles]);
 
   // ── Render ───────────────────────────────────────────────────────────────────
   return (

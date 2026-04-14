@@ -74,25 +74,39 @@ export async function fetchDashboards() {
   return data.dashboards || data || [];
 }
 
-/**
- * Fetch all home data in parallel.
- */
+const PROFILE_TYPES = [
+  'facebook-profile',
+  'instagram-profile',
+  'twitter-profile',
+  'linkedin-profile',
+  'tiktok-profile',
+  'youtube-profile',
+  'snapchat-profile',
+];
+
 export async function fetchHomeData({ perPage = 10 } = {}) {
-  const [keywordResult, profileResult, dashboardsResult] = await Promise.allSettled([
-    fetchShows({ type: 'keyword',          page: 1, perPage }),
-    fetchShows({ type: 'facebook-profile', page: 1, perPage }),
-    fetchDashboards(),
+  const [keywordResult, ...profileResults] = await Promise.allSettled([
+    fetchShows({ type: 'keyword', page: 1, perPage }),
+    ...PROFILE_TYPES.map((type) => fetchShows({ type, page: 1, perPage: 1 })), // perPage:1 is enough, we only need totalItems
   ]);
 
   if (keywordResult.status === 'rejected') throw keywordResult.reason;
-  if (profileResult.status === 'rejected') throw profileResult.reason;
+
+  // Sum totalItems across all platform types
+  const totalProfiles = profileResults.reduce((sum, result) => {
+    if (result.status === 'fulfilled') {
+      return sum + (result.value.pageInfo?.totalItems || 0);
+    }
+    return sum;
+  }, 0);
+
+  const dashboardsResult = await fetchDashboards().catch(() => []);
 
   return {
     keywordShows:    keywordResult.value.shows,
     keywordPageInfo: keywordResult.value.pageInfo,
-    profileShows:    profileResult.value.shows,
-    profilePageInfo: profileResult.value.pageInfo,
-    dashboards: dashboardsResult.status === 'fulfilled' ? dashboardsResult.value : [],
+    profilePageInfo: { totalItems: totalProfiles }, // ← summed total
+    dashboards: Array.isArray(dashboardsResult) ? dashboardsResult : [],
   };
 }
 

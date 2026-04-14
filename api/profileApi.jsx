@@ -18,7 +18,7 @@ export const fetchByType = async (type, page, perPage, search) => {
   const data = await res.json();
   return {
     shows: data.success && data.shows ? data.shows : [],
-    meta: data.meta || data.pagination || null,
+    meta: data.pageInfo || data.meta || data.pagination || null,
   };
 };
 
@@ -26,9 +26,9 @@ export const fetchProfiles = async (selectedType, page = 1, perPage = 20, search
   try {
     const { shows, meta } = await fetchByType(selectedType, page, perPage, search);
     const hasMore = meta
-      ? page < (meta.last_page || meta.totalPages || 1)
+      ? page < (meta.totalPages || meta.last_page || 1)
       : shows.length === perPage;
-    const totalItems = meta ? (meta.total || meta.totalItems || 0) : shows.length;
+    const totalItems = meta ? (meta.totalItems || meta.total || 0) : shows.length;
     return { success: true, data: shows, hasMore, totalItems };
   } catch (error) {
     return { success: false, message: error.message, hasMore: false };

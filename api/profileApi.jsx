@@ -53,7 +53,6 @@ export const createProfile = async (platform, payload) => {
   }
 };
 
-// ── REFETCH / UPDATE profile links ────────────────────────────────────────────
 export const refetchProfile = async (id) => {
   try {
     const headers = await getHeaders();
@@ -71,7 +70,6 @@ export const refetchProfile = async (id) => {
   }
 };
 
-// ── DELETE profile ────────────────────────────────────────────────────────────
 export const deleteProfile = async (id) => {
   try {
     const headers = await getHeaders();
@@ -105,7 +103,7 @@ export const updateProfile = async (id, payload) => {
   try {
     const headers = await getHeaders();
     const res = await fetch(`${BASE_URL}/shows/${id}/update`, {
-      method: 'POST', // Change to 'PUT' if your API requires it
+      method: 'POST', 
       headers,
       body: JSON.stringify(payload),
     });

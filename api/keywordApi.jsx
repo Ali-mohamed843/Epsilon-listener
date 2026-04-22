@@ -66,7 +66,6 @@ export const createKeyword = async (payload) => {
   }
 };
 
-// ── DELETE keyword ────────────────────────────────────────────────────────────
 export const deleteKeyword = async (id) => {
   try {
     const headers = await getAuthHeaders();
@@ -84,7 +83,6 @@ export const deleteKeyword = async (id) => {
   }
 };
 
-// ── REFETCH / UPDATE links ────────────────────────────────────────────────────
 export const refetchKeyword = async (id) => {
   try {
     const headers = await getAuthHeaders();
@@ -119,7 +117,7 @@ export const updateKeyword = async (id, payload) => {
   try {
     const headers = await getAuthHeaders();
     const response = await fetch(`${BASE_URL}/shows/${id}/update`, {
-      method: 'POST', // Use 'PUT' if your backend requires it
+      method: 'POST', 
       headers,
       body: JSON.stringify(payload),
     });

@@ -3,9 +3,6 @@ import { router } from 'expo-router';
 
 const BASE_URL = 'https://listener-api.epsilonfinder.com/admin/api';
 
-/**
- * Read the stored auth token and return ready-to-use headers.
- */
 const getAuthHeaders = async () => {
   const token = await AsyncStorage.getItem('authToken');
   return {
@@ -14,9 +11,6 @@ const getAuthHeaders = async () => {
   };
 };
 
-/**
- * Central fetch wrapper — handles 401 token expiry globally.
- */
 const apiFetch = async (url, options = {}) => {
   const headers = await getAuthHeaders();
   const response = await fetch(url, { ...options, headers });
@@ -30,9 +24,6 @@ const apiFetch = async (url, options = {}) => {
   return response;
 };
 
-/**
- * Fetch paginated shows by type.
- */
 export async function fetchShows({ type = 'keyword', page = 1, perPage = 10, search = '' } = {}) {
   const params = new URLSearchParams({
     page: String(page),
@@ -60,9 +51,6 @@ export async function fetchShows({ type = 'keyword', page = 1, perPage = 10, sea
   };
 }
 
-/**
- * Fetch all dashboards.
- */
 export async function fetchDashboards() {
   const response = await apiFetch(`${BASE_URL}/dashboards`);
 
@@ -92,7 +80,6 @@ export async function fetchHomeData({ perPage = 10 } = {}) {
 
   if (keywordResult.status === 'rejected') throw keywordResult.reason;
 
-  // Sum totalItems across all platform types
   const totalProfiles = profileResults.reduce((sum, result) => {
     if (result.status === 'fulfilled') {
       return sum + (result.value.pageInfo?.totalItems || 0);
@@ -105,12 +92,11 @@ export async function fetchHomeData({ perPage = 10 } = {}) {
   return {
     keywordShows:    keywordResult.value.shows,
     keywordPageInfo: keywordResult.value.pageInfo,
-    profilePageInfo: { totalItems: totalProfiles }, // ← summed total
+    profilePageInfo: { totalItems: totalProfiles }, 
     dashboards: Array.isArray(dashboardsResult) ? dashboardsResult : [],
   };
 }
 
-/** Map a show's engagementState to a label and color. */
 export function getEngagementMeta(state) {
   switch (state) {
     case 'hot':  return { label: 'Hot',  color: '#e8365d' };
@@ -120,7 +106,6 @@ export function getEngagementMeta(state) {
   }
 }
 
-/** Return a short display type label for a show. */
 export function getShowTypeLabel(type) {
   const map = {
     'keyword':             'Keyword',
@@ -134,7 +119,6 @@ export function getShowTypeLabel(type) {
   return map[type] || type;
 }
 
-/** Format a date string to a readable short date. */
 export function formatDate(dateStr) {
   if (!dateStr) return null;
   return new Date(dateStr).toLocaleDateString('en-GB', {

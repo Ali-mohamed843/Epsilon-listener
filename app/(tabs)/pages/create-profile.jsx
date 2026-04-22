@@ -187,7 +187,6 @@ export default function CreateProfileScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Name */}
           <View style={{ marginBottom: 20 }}>
             <Text style={styles.fieldLabel}>Name</Text>
             <TextInput
@@ -200,12 +199,10 @@ export default function CreateProfileScreen() {
             {nameError && <Text style={styles.errorText}>Name is required</Text>}
           </View>
 
-          {/* Expire Date */}
           <View style={{ marginBottom: 20 }}>
             <DateField label="Expire Date" value={form.expiry_date} onChange={(v) => set('expiry_date', v)} />
           </View>
 
-          {/* Profile URL */}
           <View style={{ marginBottom: 20 }}>
             <Text style={styles.fieldLabel}>Profile Url</Text>
             <TextInput
@@ -219,22 +216,18 @@ export default function CreateProfileScreen() {
             />
           </View>
 
-          {/* Exact Keyword */}
           <View style={{ marginBottom: 20 }}>
             <CheckboxRow label="Exact Keyword" value={form.exact_keyword} onChange={(v) => set('exact_keyword', v)} />
           </View>
 
-          {/* Start Date */}
           <View style={{ marginBottom: 20 }}>
             <DateField label="Start Date" value={form.start_date} onChange={(v) => set('start_date', v)} />
           </View>
 
-          {/* End Date */}
           <View style={{ marginBottom: 20 }}>
             <DateField label="End Date" value={form.end_date} onChange={(v) => set('end_date', v)} />
           </View>
 
-          {/* Refetch Engagement */}
           <View style={{ marginBottom: 20 }}>
             <CheckboxRow label="Refetch Engagement" value={form.refetchEngagment} onChange={(v) => set('refetchEngagment', v)} />
           </View>

@@ -1,5 +1,3 @@
-// app/pages/sentiment-details/[id].jsx
-
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -20,9 +18,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width, height } = Dimensions.get('window');
 
-// ============================================
-// API CONFIGURATION
-// ============================================
 
 const BASE_URL = 'https://listener-api.epsilonfinder.com/admin/api';
 
@@ -32,10 +27,6 @@ const getHeaders = async () => {
   if (token) headers['Authorization'] = `Bearer ${token}`;
   return headers;
 };
-
-// ============================================
-// ICONS
-// ============================================
 
 const BackIcon = ({ size = 20, color = '#fff' }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.5}>
@@ -91,9 +82,6 @@ const YoutubeIcon = ({ size = 16 }) => (
   </Svg>
 );
 
-// ============================================
-// UTILITY FUNCTIONS
-// ============================================
 
 const formatNumber = (num) => {
   if (!num && num !== 0) return '0';
@@ -148,9 +136,6 @@ const getSentimentConfig = (sentiment) => {
   return { color: '#f59e0b', bg: '#fffbeb', label: 'Neutral', icon: '😐' };
 };
 
-// ============================================
-// COMMENT CARD COMPONENT
-// ============================================
 
 const CommentCard = ({ item }) => {
   const platformColor = getPlatformColor(item.platform);
@@ -170,7 +155,6 @@ const CommentCard = ({ item }) => {
         elevation: 3,
       }}
     >
-      {/* Platform Header */}
       <View
         style={{
           flexDirection: 'row',
@@ -225,10 +209,7 @@ const CommentCard = ({ item }) => {
           </Text>
         </View>
       </View>
-
-      {/* Content */}
       <View style={{ padding: 14 }}>
-        {/* Author Info */}
         {item.author_name && item.author_name !== 'NA' && (
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
             <View
@@ -257,7 +238,6 @@ const CommentCard = ({ item }) => {
           </View>
         )}
 
-        {/* Comment Text */}
         {item.text && (
           <Text
             style={{ fontSize: 14, color: '#1a0a1a', lineHeight: 21, marginBottom: 12 }}
@@ -266,7 +246,6 @@ const CommentCard = ({ item }) => {
           </Text>
         )}
 
-        {/* Keywords */}
         {item.keywords && item.keywords.length > 0 && (
           <ScrollView
             horizontal
@@ -292,7 +271,6 @@ const CommentCard = ({ item }) => {
           </ScrollView>
         )}
 
-        {/* Stats & Date */}
         <View
           style={{
             flexDirection: 'row',
@@ -318,7 +296,6 @@ const CommentCard = ({ item }) => {
           )}
         </View>
 
-        {/* View Original Button */}
         {item.permalink && (
           <TouchableOpacity
             onPress={() => Linking.openURL(item.permalink)}
@@ -344,9 +321,6 @@ const CommentCard = ({ item }) => {
   );
 };
 
-// ============================================
-// MAIN SCREEN
-// ============================================
 
 export default function SentimentDetailsScreen() {
   const insets = useSafeAreaInsets();
@@ -366,7 +340,6 @@ export default function SentimentDetailsScreen() {
   const sentimentConfig = getSentimentConfig(sentiment);
   const hashValue = hash || id;
 
-  // Decode keyword if it was encoded
   const decodedKeyword = keyword ? decodeURIComponent(keyword) : '';
 
   const fetchContent = async (pageNum = 1, refresh = false) => {
@@ -380,7 +353,6 @@ export default function SentimentDetailsScreen() {
 
       const headers = await getHeaders();
 
-      // FIXED: Use comments/keywords endpoint instead of contents/keywords
       const url = `${BASE_URL}/comments/keywords?page=${pageNum}&perPage=10&hash=${hashValue}&keyword=${encodeURIComponent(decodedKeyword)}&sentiment=${sentiment}`;
       
       console.log('Fetching comments:', url);
@@ -394,7 +366,6 @@ export default function SentimentDetailsScreen() {
       console.log('API Response:', JSON.stringify(data, null, 2));
 
       if (data.success) {
-        // FIXED: Extract comments from nested structure (data[0].comments)
         const allComments = (data.data || []).reduce((acc, item) => {
           return [...acc, ...(item.comments || [])];
         }, []);
@@ -407,8 +378,6 @@ export default function SentimentDetailsScreen() {
           setComments((prev) => [...prev, ...allComments]);
         }
         
-        // Note: totalItems in API response seems to indicate number of keyword groups, not comments
-        // We'll calculate based on actual comments
         setTotalPages(data.pageInfo?.totalPages || 1);
         setTotalItems(allComments.length);
         setPage(pageNum);
@@ -439,10 +408,8 @@ export default function SentimentDetailsScreen() {
     }
   };
 
-  // Calculate totals
   const totalLikes = comments.reduce((sum, item) => sum + (Number(item.likes) || 0), 0);
 
-  // Loading State
   if (isLoading) {
     return (
       <View style={{ flex: 1, backgroundColor: '#faf8fa', alignItems: 'center', justifyContent: 'center' }}>
@@ -472,7 +439,6 @@ export default function SentimentDetailsScreen() {
     <View style={{ flex: 1, backgroundColor: '#faf8fa' }}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      {/* Header */}
       <View
         style={{
           paddingTop: insets.top || StatusBar.currentHeight || 0,
@@ -482,7 +448,6 @@ export default function SentimentDetailsScreen() {
           overflow: 'hidden',
         }}
       >
-        {/* Background Decorations */}
         <View
           style={{
             position: 'absolute',
@@ -535,7 +500,6 @@ export default function SentimentDetailsScreen() {
         </View>
       </View>
 
-      {/* Stats Bar */}
       <View
         style={{
           flexDirection: 'row',
@@ -578,8 +542,6 @@ export default function SentimentDetailsScreen() {
           <Text style={{ fontSize: 11, color: '#9e859e', fontWeight: '600' }}>Total Likes</Text>
         </View>
       </View>
-
-      {/* Error State */}
       {error ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <View

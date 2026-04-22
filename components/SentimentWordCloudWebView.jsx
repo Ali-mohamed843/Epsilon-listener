@@ -1,5 +1,3 @@
-// components/SentimentWordCloudWebView.jsx
-
 import React, { useMemo, useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { WebView } from 'react-native-webview';
@@ -18,7 +16,6 @@ const SentimentWordCloudWebView = ({ percentage, words = [], height = 420, showH
   const handleZoomOut = () => setZoomLevel((prev) => Math.max(prev - 0.25, 0.5));
   const handleReset = () => setZoomLevel(1);
 
-  // Handle word press - navigate to sentiment details
   const handleWordPress = useCallback((word) => {
     if (word && word.text && showHash) {
       router.push({
@@ -33,7 +30,6 @@ const SentimentWordCloudWebView = ({ percentage, words = [], height = 420, showH
     }
   }, [router, showHash]);
 
-  // Handle messages from WebView
   const handleMessage = useCallback((event) => {
     try {
       const data = JSON.parse(event.nativeEvent.data);

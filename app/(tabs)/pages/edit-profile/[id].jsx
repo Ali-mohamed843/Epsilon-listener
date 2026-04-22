@@ -35,7 +35,6 @@ export default function EditProfileScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Step 1 state
   const [profileName, setProfileName] = useState('');
   const [keywords, setKeywords] = useState([]);
   const [exactMatch, setExactMatch] = useState(false);
@@ -43,7 +42,6 @@ export default function EditProfileScreen() {
   const [endDate, setEndDate] = useState('');
   const [profileUrl, setProfileUrl] = useState('');
 
-  // Step 2 state
   const [liveUpdates, setLiveUpdates] = useState(false);
   const [refetchEngagement, setRefetchEngagement] = useState(false);
   const [refetchPeriod, setRefetchPeriod] = useState('');
@@ -53,7 +51,6 @@ export default function EditProfileScreen() {
   const headerTitleSize = isSmallDevice ? 18 : 20;
   const buttonHeight = isSmallDevice ? 46 : 50;
 
-  // Fetch profile data
   useEffect(() => {
     if (!id) return;
     const loadProfile = async () => {
@@ -63,8 +60,7 @@ export default function EditProfileScreen() {
   if (res.success) {
     const data = res.data;
     setProfileName(data.name || '');
-    
-    // ✅ profile_url field, fallback to pageUrls[0]
+  
     setProfileUrl(data.profile_url || data.pageUrls?.[0] || '');
     
     setStartDate(data.start_date?.split('T')[0] || '');
@@ -75,7 +71,6 @@ export default function EditProfileScreen() {
     setRefetchPeriod(data.refetchPeriod ? String(data.refetchPeriod) : '');
     setStockMarketAnalysis(!!data.stock_analysis);
 
-    // ✅ Handle empty string keywords gracefully
     const kwStr = typeof data.keywords === 'string'
       ? data.keywords
       : (data.keywords?.join(',') || '');
@@ -85,8 +80,6 @@ export default function EditProfileScreen() {
       .map(v => v.trim())
       .filter(Boolean)
       .map((val, i) => ({ id: Date.now() + i, value: val, isFirst: i === 0 }));
-
-    // ✅ Always ensure at least one row, and always make first row editable
     setKeywords(
       kwArr.length
         ? kwArr
@@ -183,7 +176,6 @@ export default function EditProfileScreen() {
         className="flex-1"
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        {/* ─── Header ─── */}
         <View
           className="bg-primary overflow-hidden"
           style={{
@@ -214,10 +206,7 @@ export default function EditProfileScreen() {
           </View>
         </View>
 
-        {/* ─── Step Indicator ─── */}
         <StepIndicator currentStep={currentStep} isSmallDevice={isSmallDevice} steps={PROFILE_STEPS} />
-
-        {/* ─── Body ─── */}
         <ScrollView
           className="flex-1"
           contentContainerStyle={{ paddingHorizontal: width * 0.06, paddingBottom: 24 }}
@@ -262,7 +251,6 @@ export default function EditProfileScreen() {
           )}
         </ScrollView>
 
-        {/* ─── Bottom Navigation ─── */}
         <View
           className="flex-row border-t border-border bg-surface2"
           style={{ paddingHorizontal: width * 0.06, paddingTop: 16, paddingBottom: Math.max(insets.bottom, 16) + 8, gap: 12 }}

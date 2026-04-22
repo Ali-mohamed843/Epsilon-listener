@@ -95,12 +95,12 @@ export const SentimentWordCloud = ({ title, percentage, words, type, onWordPress
   
   const getFontSize = (val) => {
     const ratio = val / maxVal;
-    return Math.round(12 + ratio * 18); // Range: 12-30
+    return Math.round(12 + ratio * 18); 
   };
   
   const getOpacity = (val) => {
     const ratio = val / maxVal;
-    return 0.6 + ratio * 0.4; // Range: 0.6-1.0
+    return 0.6 + ratio * 0.4;
   };
 
   const getWeight = (val) => {
@@ -141,7 +141,6 @@ export const SentimentWordCloud = ({ title, percentage, words, type, onWordPress
         </View>
       </View>
 
-      {/* Word Cloud Area */}
       <View style={{ 
         flexDirection: 'row', 
         flexWrap: 'wrap', 
@@ -205,7 +204,6 @@ export const DonutLegend = ({ title, centerValue, centerLabel, items }) => (
 export const HashtagCloud = ({ hashtags = [], onHashtagPress }) => {
   const sizes = [18, 13, 15, 11, 16, 12, 14, 13, 11, 15, 12, 11, 10, 13, 10, 12, 14, 11];
   
-  // Don't render if no hashtags
   if (!hashtags || hashtags.length === 0) {
     return (
       <View 
@@ -245,7 +243,6 @@ export const HashtagCloud = ({ hashtags = [], onHashtagPress }) => {
     >
       <View className="flex-row flex-wrap" style={{ gap: 4 }}>
         {hashtags.map((tag, i) => {
-          // Handle both object format {id, name, platformContents} and string format
           const tagName = typeof tag === 'string' ? tag : (tag.name || tag);
           const tagId = typeof tag === 'string' ? i : (tag.id || i);
           const hasLink = typeof tag === 'object' && tag.platformContents && tag.platformContents.length > 0;
@@ -257,7 +254,6 @@ export const HashtagCloud = ({ hashtags = [], onHashtagPress }) => {
                 if (onHashtagPress) {
                   onHashtagPress(tag);
                 } else if (hasLink) {
-                  // Default behavior: open first permalink
                   const permalink = tag.platformContents[0].permalink;
                   if (permalink) {
                     Linking.openURL(permalink).catch(err => console.error('Failed to open URL:', err));

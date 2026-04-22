@@ -219,38 +219,38 @@ export default function CreateKeywordScreen() {
           keyboardShouldPersistTaps="handled"
         >
           {currentStep === 1 && (
-  <Step1
-    keywordName={keywordName} setKeywordName={setKeywordName}
-    selectedPlatforms={selectedPlatforms} togglePlatform={togglePlatform}
-    keywords={keywords} addKeyword={addKeyword}
-    updateKeyword={updateKeywordFn} deleteKeyword={deleteKeywordFn}
-    startDate={startDate} setStartDate={setStartDate}
-    endDate={endDate} setEndDate={setEndDate}
-    isSmallDevice={isSmallDevice}
-  />
-)}
-{currentStep === 2 && (
-  <Step2
-    urlGroup={urlGroup} setUrlGroup={setUrlGroup}
-    urlGroups={urlGroups} isSmallDevice={isSmallDevice}
-  />
-)}
-{currentStep === 3 && (
-  <Step3
-    customizedIntents={customizedIntents} setCustomizedIntents={setCustomizedIntents}
-    aiIntents={aiIntents} setAiIntents={setAiIntents}
-    intents={intents} setIntents={setIntents}
-    drivers={drivers} setDrivers={setDrivers}
-    isLiveUpdates={isLiveUpdates} setIsLiveUpdates={setIsLiveUpdates}
-    refetchEngagment={refetchEngagment} setRefetchEngagment={setRefetchEngagment}
-    refetchPeriod={refetchPeriod} setRefetchPeriod={setRefetchPeriod}
-    stockAnalysis={stockAnalysis} setStockAnalysis={setStockAnalysis}
-    stockCompany={stockCompany} setStockCompany={setStockCompany}
-    stockStartDate={stockStartDate} setStockStartDate={setStockStartDate}
-    stockEndDate={stockEndDate} setStockEndDate={setStockEndDate}
-    isSmallDevice={isSmallDevice}
-  />
-)}
+            <Step1
+              keywordName={keywordName} setKeywordName={setKeywordName}
+              selectedPlatforms={selectedPlatforms} togglePlatform={togglePlatform}
+              keywords={keywords} addKeyword={addKeyword}
+              updateKeyword={updateKeywordFn} deleteKeyword={deleteKeywordFn}
+              startDate={startDate} setStartDate={setStartDate}
+              endDate={endDate} setEndDate={setEndDate}
+              isSmallDevice={isSmallDevice}
+            />
+          )}
+          {currentStep === 2 && (
+            <Step2
+              urlGroup={urlGroup} setUrlGroup={setUrlGroup}
+              urlGroups={urlGroups} isSmallDevice={isSmallDevice}
+            />
+          )}
+          {currentStep === 3 && (
+            <Step3
+              customizedIntents={customizedIntents} setCustomizedIntents={setCustomizedIntents}
+              aiIntents={aiIntents} setAiIntents={setAiIntents}
+              intents={intents} setIntents={setIntents}
+              drivers={drivers} setDrivers={setDrivers}
+              isLiveUpdates={isLiveUpdates} setIsLiveUpdates={setIsLiveUpdates}
+              refetchEngagment={refetchEngagment} setRefetchEngagment={setRefetchEngagment}
+              refetchPeriod={refetchPeriod} setRefetchPeriod={setRefetchPeriod}
+              stockAnalysis={stockAnalysis} setStockAnalysis={setStockAnalysis}
+              stockCompany={stockCompany} setStockCompany={setStockCompany}
+              stockStartDate={stockStartDate} setStockStartDate={setStockStartDate}
+              stockEndDate={stockEndDate} setStockEndDate={setStockEndDate}
+              isSmallDevice={isSmallDevice}
+            />
+          )}
         </ScrollView>
 
         <View

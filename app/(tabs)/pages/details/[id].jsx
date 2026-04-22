@@ -21,19 +21,18 @@ export default function EditKeywordScreen() {
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  // Add these new state variables
-const [customizedIntents, setCustomizedIntents] = useState(false);
-const [aiIntents, setAiIntents]                 = useState(true);
-const [intents, setIntents]                     = useState(['']);
-const [drivers, setDrivers]                     = useState(['']);
-const [isLiveUpdates, setIsLiveUpdates]         = useState(false);
-const [refetchEngagment, setRefetchEngagment]   = useState(false);
-const [refetchPeriod, setRefetchPeriod]         = useState(null);
-const [stockAnalysis, setStockAnalysis]         = useState(false);
-const [stockCompany, setStockCompany]           = useState(null);
-const [stockStartDate, setStockStartDate]       = useState('');
-const [stockEndDate, setStockEndDate]           = useState('');
-  // Form State
+  const [customizedIntents, setCustomizedIntents] = useState(false);
+  const [aiIntents, setAiIntents]                 = useState(true);
+  const [intents, setIntents]                     = useState(['']);
+  const [drivers, setDrivers]                     = useState(['']);
+  const [isLiveUpdates, setIsLiveUpdates]         = useState(false);
+  const [refetchEngagment, setRefetchEngagment]   = useState(false);
+  const [refetchPeriod, setRefetchPeriod]         = useState(null);
+  const [stockAnalysis, setStockAnalysis]         = useState(false);
+  const [stockCompany, setStockCompany]           = useState(null);
+  const [stockStartDate, setStockStartDate]       = useState('');
+  const [stockEndDate, setStockEndDate]           = useState('');
+
   const [keywordName, setKeywordName] = useState('');
   const [selectedPlatforms, setSelectedPlatforms] = useState([]);
   const [keywords, setKeywords] = useState([]);
@@ -46,7 +45,6 @@ const [stockEndDate, setStockEndDate]           = useState('');
   const headerTitleSize = isSmallDevice ? 18 : 20;
   const buttonHeight = isSmallDevice ? 46 : 50;
 
-  // Load data & URL groups
   useEffect(() => {
     if (!id) return;
     const loadData = async () => {
@@ -57,7 +55,6 @@ const [stockEndDate, setStockEndDate]           = useState('');
       fetchUrlGroups()
     ]);
 
-    // Load URL groups first so we can reference them below
     const groups = ugRes.success ? (ugRes.urlGroups || []) : [];
     setUrlGroups(groups);
 
@@ -78,7 +75,6 @@ const [stockEndDate, setStockEndDate]           = useState('');
       }));
       setKeywords(kwArr.length ? kwArr : [{ id: Date.now(), value: '', isFirst: true }]);
 
-      // ✅ Match groupId to the already-loaded groups list
       if (d.groupId) {
         const matched = groups.find(g => g.id === d.groupId);
         if (matched) setUrlGroup(matched);
@@ -96,7 +92,6 @@ const [stockEndDate, setStockEndDate]           = useState('');
     loadData();
   }, [id]);
 
-  // Handlers
   const togglePlatform = (pid) => {
     setSelectedPlatforms(prev => prev.includes(pid) ? prev.filter(p => p !== pid) : [...prev, pid]);
   };
@@ -183,7 +178,6 @@ const [stockEndDate, setStockEndDate]           = useState('');
     <View className="flex-1 bg-surface2">
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
       <KeyboardAvoidingView className="flex-1" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        {/* Header */}
         <View className="bg-primary overflow-hidden" style={{ paddingTop: insets.top || StatusBar.currentHeight || 0, paddingBottom: isSmallDevice ? 20 : 24, paddingHorizontal: width * 0.06 }}>
           <View className="absolute rounded-full" style={{ top: -50, right: -50, width: 160, height: 160, backgroundColor: 'rgba(255,255,255,0.06)' }} />
           <View className="flex-row items-center" style={{ marginTop: 8, gap: 12 }}>
@@ -201,41 +195,40 @@ const [stockEndDate, setStockEndDate]           = useState('');
 
         <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: width * 0.06, paddingBottom: 24 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
           {currentStep === 1 && (
-  <Step1
-    keywordName={keywordName} setKeywordName={setKeywordName}
-    selectedPlatforms={selectedPlatforms} togglePlatform={togglePlatform}
-    keywords={keywords} addKeyword={addKeyword}
-    updateKeyword={updateKeywordFn} deleteKeyword={deleteKeywordFn}
-    startDate={startDate} setStartDate={setStartDate}
-    endDate={endDate} setEndDate={setEndDate}
-    isSmallDevice={isSmallDevice}
-  />
-)}
-{currentStep === 2 && (
-  <Step2
-    urlGroup={urlGroup} setUrlGroup={setUrlGroup}
-    urlGroups={urlGroups} isSmallDevice={isSmallDevice}
-  />
-)}
-{currentStep === 3 && (
-  <Step3
-    customizedIntents={customizedIntents} setCustomizedIntents={setCustomizedIntents}
-    aiIntents={aiIntents} setAiIntents={setAiIntents}
-    intents={intents} setIntents={setIntents}
-    drivers={drivers} setDrivers={setDrivers}
-    isLiveUpdates={isLiveUpdates} setIsLiveUpdates={setIsLiveUpdates}
-    refetchEngagment={refetchEngagment} setRefetchEngagment={setRefetchEngagment}
-    refetchPeriod={refetchPeriod} setRefetchPeriod={setRefetchPeriod}
-    stockAnalysis={stockAnalysis} setStockAnalysis={setStockAnalysis}
-    stockCompany={stockCompany} setStockCompany={setStockCompany}
-    stockStartDate={stockStartDate} setStockStartDate={setStockStartDate}
-    stockEndDate={stockEndDate} setStockEndDate={setStockEndDate}
-    isSmallDevice={isSmallDevice}
-  />
-)}
+            <Step1
+              keywordName={keywordName} setKeywordName={setKeywordName}
+              selectedPlatforms={selectedPlatforms} togglePlatform={togglePlatform}
+              keywords={keywords} addKeyword={addKeyword}
+              updateKeyword={updateKeywordFn} deleteKeyword={deleteKeywordFn}
+              startDate={startDate} setStartDate={setStartDate}
+              endDate={endDate} setEndDate={setEndDate}
+              isSmallDevice={isSmallDevice}
+            />
+          )}
+          {currentStep === 2 && (
+            <Step2
+              urlGroup={urlGroup} setUrlGroup={setUrlGroup}
+              urlGroups={urlGroups} isSmallDevice={isSmallDevice}
+            />
+          )}
+          {currentStep === 3 && (
+            <Step3
+              customizedIntents={customizedIntents} setCustomizedIntents={setCustomizedIntents}
+              aiIntents={aiIntents} setAiIntents={setAiIntents}
+              intents={intents} setIntents={setIntents}
+              drivers={drivers} setDrivers={setDrivers}
+              isLiveUpdates={isLiveUpdates} setIsLiveUpdates={setIsLiveUpdates}
+              refetchEngagment={refetchEngagment} setRefetchEngagment={setRefetchEngagment}
+              refetchPeriod={refetchPeriod} setRefetchPeriod={setRefetchPeriod}
+              stockAnalysis={stockAnalysis} setStockAnalysis={setStockAnalysis}
+              stockCompany={stockCompany} setStockCompany={setStockCompany}
+              stockStartDate={stockStartDate} setStockStartDate={setStockStartDate}
+              stockEndDate={stockEndDate} setStockEndDate={setStockEndDate}
+              isSmallDevice={isSmallDevice}
+            />
+          )}
         </ScrollView>
 
-        {/* Footer */}
         <View className="flex-row border-t border-border bg-surface2" style={{ paddingHorizontal: width * 0.06, paddingTop: 16, paddingBottom: Math.max(insets.bottom, 16) + 8, gap: 12 }}>
           {currentStep > 1 && (
             <TouchableOpacity onPress={goBack} className="flex-1 items-center justify-center border-2 border-border" style={{ height: buttonHeight, borderRadius: 14 }}>

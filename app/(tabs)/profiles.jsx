@@ -64,7 +64,6 @@ const mapProfiles = (data) =>
     hash:      item.hash?.hash,
   }));
 
-// ── Icons ─────────────────────────────────────────────────────────────────────
 const PlusIcon = ({ size = 14, color = '#6e226e' }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.5} strokeLinecap="round">
     <Line x1={12} y1={5} x2={12} y2={19} /><Line x1={5} y1={12} x2={19} y2={12} />
@@ -142,7 +141,6 @@ const platformStyles = {
   Snapchat:  { bg: '#fffde8', color: '#ccaa00', Badge: TwitterBadge },
 };
 
-// ── Platform Tab Bar ──────────────────────────────────────────────────────────
 const PlatformTabBar = ({ selectedTab, onSelect }) => (
   <View style={{ height: 42 }}>
     <ScrollView
@@ -174,7 +172,6 @@ const PlatformTabBar = ({ selectedTab, onSelect }) => (
   </View>
 );
 
-// ── Profile Card ──────────────────────────────────────────────────────────────
 const ProfileCard = ({ profile, isSmallDevice, onEdit, onReport, onUpdate, onDelete, isUpdating, isDeleting }) => {
   const [isChecked, setIsChecked] = useState(false);
   const style = platformStyles[profile.platform] || platformStyles.Facebook;
@@ -194,9 +191,7 @@ const ProfileCard = ({ profile, isSmallDevice, onEdit, onReport, onUpdate, onDel
       <TouchableOpacity
       onPress={() => router.push(`/pages/report/${profile.hash}`)}
       >
-      {/* Top row */}
       <View style={{ flexDirection: 'row', alignItems: 'center', padding: cardPadding, paddingBottom: cardPadding - 2, gap: 12 }}>
-        {/* Checkbox */}
         <TouchableOpacity
           onPress={() => setIsChecked(!isChecked)}
           style={{
@@ -213,7 +208,6 @@ const ProfileCard = ({ profile, isSmallDevice, onEdit, onReport, onUpdate, onDel
           )}
         </TouchableOpacity>
 
-        {/* Name + meta */}
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={{ fontSize: nameSize, fontWeight: '700', color: '#1a1a2e', marginBottom: 4 }} numberOfLines={1}>
             {profile.name}
@@ -229,14 +223,12 @@ const ProfileCard = ({ profile, isSmallDevice, onEdit, onReport, onUpdate, onDel
           </View>
         </View>
 
-        {/* Followers badge */}
         <View style={{ backgroundColor: '#f5edf5', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6, alignItems: 'center' }}>
           <Text style={{ fontSize: 13, fontWeight: '800', color: '#6e226e', lineHeight: 13 }}>{profile.followers}</Text>
           <Text style={{ fontSize: 10, color: '#9e859e' }}>followers</Text>
         </View>
       </View>
 
-      {/* Action buttons */}
       <View style={{ flexDirection: 'row', alignItems: 'center', borderTopWidth: 1, borderTopColor: '#f0e8f0', padding: isSmallDevice ? 8 : 10, paddingHorizontal: 12, gap: 7 }}>
         <TouchableOpacity
           onPress={() => onEdit(profile.id)}
@@ -290,7 +282,6 @@ const ProfileCard = ({ profile, isSmallDevice, onEdit, onReport, onUpdate, onDel
   );
 };
 
-// ── Main Screen ───────────────────────────────────────────────────────────────
 export default function ProfilesScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -324,7 +315,7 @@ const loadProfiles = useCallback(async () => {
   if (result.success) {
     setProfiles(mapProfiles(result.data));
     setHasMore(result.hasMore ?? result.data.length === PAGE_SIZE);
-    setTotalItems(result.totalItems ?? result.data.length); // ← from the tab's own response
+    setTotalItems(result.totalItems ?? result.data.length); 
   } else {
     setError(result.message || 'Failed to load profiles');
   }
@@ -332,7 +323,6 @@ const loadProfiles = useCallback(async () => {
   setIsLoading(false);
 }, [selectedTab, searchQuery]);
 
-  // ── Load next page ───────────────────────────────────────────────────────────
   const loadMore = useCallback(async () => {
     if (isLoadingMore || !hasMore || isLoading) return;
     setIsLoadingMore(true);
@@ -346,7 +336,6 @@ const loadProfiles = useCallback(async () => {
     setIsLoadingMore(false);
   }, [isLoadingMore, hasMore, isLoading, page, selectedTab, searchQuery]);
 
-  // ── Pull-to-refresh ──────────────────────────────────────────────────────────
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     setPage(1);
@@ -358,7 +347,6 @@ const loadProfiles = useCallback(async () => {
     setRefreshing(false);
   }, [selectedTab, searchQuery]);
 
-  // ── Actions ──────────────────────────────────────────────────────────────────
   const handleUpdate = async (id) => {
     setActionLoading({ id, type: 'update' });
     const result = await refetchProfile(id);
@@ -402,7 +390,6 @@ const loadProfiles = useCallback(async () => {
   const handleEdit   = (id) => router.push(`/pages/edit-profile/${id}`);
   const handleReport = (id) => router.push(`/pages/report-profile/${id}`);
 
-  // ── Scroll handler ───────────────────────────────────────────────────────────
   const handleScroll = ({ nativeEvent }) => {
     const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
     const nearBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 250;
@@ -413,12 +400,9 @@ const loadProfiles = useCallback(async () => {
   loadProfiles();
 }, [loadProfiles]);
 
-  // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <View style={{ flex: 1, backgroundColor: '#f8f4f8' }}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
-
-      {/* Header */}
       <View
         style={{
           backgroundColor: '#6e226e', overflow: 'hidden',
@@ -464,7 +448,6 @@ const loadProfiles = useCallback(async () => {
         </View>
       </View>
 
-      {/* Search */}
       <View style={{ flexDirection: 'row', paddingHorizontal: width * 0.05, paddingTop: 16, paddingBottom: 6, gap: 10 }}>
         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderWidth: 1, borderColor: '#ede4ed', height: searchHeight, borderRadius: 14, paddingHorizontal: 14, gap: 8 }}>
           <SearchIcon />
@@ -478,10 +461,8 @@ const loadProfiles = useCallback(async () => {
         </View>
       </View>
 
-      {/* Platform tabs */}
       <PlatformTabBar selectedTab={selectedTab} onSelect={handleTabSelect} />
 
-      {/* Count row */}
       <View style={{ paddingHorizontal: width * 0.05, paddingTop: 4, paddingBottom: 8 }}>
         <Text style={{ fontSize: 12.5, color: '#9e859e' }}>
           <Text style={{ color: '#6e226e', fontWeight: '700' }}>
@@ -490,7 +471,6 @@ const loadProfiles = useCallback(async () => {
         </Text>
       </View>
 
-      {/* List */}
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingHorizontal: width * 0.05, paddingBottom: 20 }}
@@ -536,7 +516,6 @@ const loadProfiles = useCallback(async () => {
               />
             ))}
 
-            {/* Load more footer */}
             {isLoadingMore && (
               <View style={{ paddingVertical: 20, alignItems: 'center' }}>
                 <ActivityIndicator size="small" color="#6e226e" />

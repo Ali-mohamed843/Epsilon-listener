@@ -50,14 +50,14 @@ function SelectField({ fetchType, value, onChange, placeholder }) {
   const [options, setOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [search, setSearch] = useState('');   // ← new
+  const [search, setSearch] = useState('');  
 
   useEffect(() => { setOptions([]); setSearch(''); }, [fetchType]);
 
   useEffect(() => {
     if (!open) { setSearch(''); return; }
     setLoading(true); setError('');
-    fetchShows(fetchType, 1, 50, search)      // ← passes search to API
+    fetchShows(fetchType, 1, 50, search)   
       .then(res => {
         if (res.success) {
           setOptions(res.data.map(item => ({
@@ -69,7 +69,7 @@ function SelectField({ fetchType, value, onChange, placeholder }) {
       })
       .catch(() => setError('Network error'))
       .finally(() => setLoading(false));
-  }, [open, fetchType, search]);             // ← search is a dependency
+  }, [open, fetchType, search]);            
 
   const filteredOptions = search.trim()
     ? options.filter(opt => opt.label.toLowerCase().includes(search.toLowerCase()))
@@ -103,7 +103,6 @@ function SelectField({ fetchType, value, onChange, placeholder }) {
       {open && (
         <View style={{ backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#ede4ed', borderRadius: 12, marginTop: 4, overflow: 'hidden', maxHeight: 260 }}>
           
-          {/* Search bar */}
           <View style={{ flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#ede4ed', paddingHorizontal: 12, paddingVertical: 8 }}>
             <TextInput
               value={search}

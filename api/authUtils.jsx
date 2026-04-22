@@ -6,5 +6,4 @@ export const clearAuth = async () => {
   await AsyncStorage.multiRemove(['authToken', 'userData']);
 };
 
-// Attach to any API call — returns true if the response was 401
 export const isUnauthorized = (status) => status === 401;

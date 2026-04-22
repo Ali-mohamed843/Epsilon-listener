@@ -171,17 +171,14 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState(null);
 
-  // Derived display values
   const displayName = userData?.name || userData?.username || userData?.email?.split('@')[0] || 'User';
   const avatarInitial = displayName.charAt(0).toUpperCase();
 
   useEffect(() => {
-    // Load user data from AsyncStorage
     AsyncStorage.getItem('userData').then((raw) => {
       if (raw) setUserData(JSON.parse(raw));
     });
 
-    // Load home screen data
     (async () => {
       try {
         const { keywordShows, keywordPageInfo, profilePageInfo, dashboards } =

@@ -44,20 +44,16 @@ export default function Index() {
   });
 
   useEffect(() => {
-    // Animate content in
     Animated.parallel([
       Animated.timing(fadeAnim,  { toValue: 1, duration: 600, useNativeDriver: true }),
       Animated.timing(slideAnim, { toValue: 0, duration: 600, useNativeDriver: true }),
     ]).start();
 
-    // Check for saved token
     (async () => {
       const token = await AsyncStorage.getItem('authToken');
       if (token) {
-        // Small delay so the splash doesn't flash
         setTimeout(() => router.replace('/(tabs)'), 800);
       }
-      // No token → stay on splash, show the Sign In button
     })();
   }, []);
 

@@ -15,7 +15,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const BASE_URL = 'https://listener-api.epsilonfinder.com/admin/api';
 const PRIMARY_COLOR = '#6e226e';
 
-// ── Icons ─────────────────────────────────────────────────────────────────────
 const ChevronDownIcon = ({ size = 14, color = '#fff' }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.5}>
     <Path d="M6 9l6 6 6-6" />
@@ -58,7 +57,6 @@ const CheckIcon = ({ size = 14, color = '#fff' }) => (
   </Svg>
 );
 
-// ── Language Option ───────────────────────────────────────────────────────────
 const LanguageOption = ({ lang, label, sublabel, letter, selected, onSelect }) => (
   <TouchableOpacity
     onPress={() => onSelect(lang)}
@@ -108,7 +106,6 @@ const LanguageOption = ({ lang, label, sublabel, letter, selected, onSelect }) =
   </TouchableOpacity>
 );
 
-// ── Main Component ────────────────────────────────────────────────────────────
 const ExportDropdown = ({ showId, dateRange, reportName = 'Report' }) => {
   const buttonRef = useRef(null);
 
@@ -121,7 +118,6 @@ const ExportDropdown = ({ showId, dateRange, reportName = 'Report' }) => {
   const [progressText, setProgressText]         = useState('');
   const [dropdownPos, setDropdownPos]           = useState({ top: 100, right: 16 });
 
-  // ── Open dropdown ───────────────────────────────────────────────────────────
   const openDropdown = () => {
     if (buttonRef.current) {
       buttonRef.current.measureInWindow((x, y, w, h) => {
@@ -133,14 +129,11 @@ const ExportDropdown = ({ showId, dateRange, reportName = 'Report' }) => {
     }
   };
 
-  // ── Format selected ─────────────────────────────────────────────────────────
-  // Excel = English only, skip lang modal and export directly
   const onFormatPress = (format) => {
     setDropdownVisible(false);
     setSelectedFormat(format);
 
     if (format === 'excel') {
-      // Excel is English-only — jump straight to export
       doExport('excel', 'en');
       return;
     }
@@ -149,7 +142,6 @@ const ExportDropdown = ({ showId, dateRange, reportName = 'Report' }) => {
     setLangModalVisible(true);
   };
 
-  // ── Lang confirmed → start export ──────────────────────────────────────────
   const onConfirmLang = () => {
     if (!selectedLang) {
       Alert.alert('Select Language', 'Please select a language first.');
@@ -159,15 +151,12 @@ const ExportDropdown = ({ showId, dateRange, reportName = 'Report' }) => {
     doExport(selectedFormat, selectedLang);
   };
 
-  // ── Core export logic ───────────────────────────────────────────────────────
   const doExport = async (format, lang) => {
     setProgressText('Connecting to server…');
     setProgressVisible(true);
 
     try {
       const token = await AsyncStorage.getItem('authToken');
-
-      // ── Build URL ────────────────────────────────────────────────────────────
       let url = '';
 
       if (format === 'pdf') {
@@ -181,16 +170,10 @@ const ExportDropdown = ({ showId, dateRange, reportName = 'Report' }) => {
       } else if (format === 'powerpoint') {
         url = `${BASE_URL}/shows/sheets/${showId}/powerpoint/v2`;
       } else {
-        // excel
         url = `${BASE_URL}/shows/sheets/${showId}/excel`;
       }
 
       setProgressText('Generating report…');
-
-      // ── POST with JSON body ──────────────────────────────────────────────────
-      // Sending lang + type as JSON body — matches what the API expects.
-      // NOTE: Do NOT set Content-Type manually when using fetch in React Native
-      // with a string body; let fetch set it, or set it explicitly as below.
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -201,14 +184,12 @@ const ExportDropdown = ({ showId, dateRange, reportName = 'Report' }) => {
         body: JSON.stringify({ type: 'posts', lang }),
       });
 
-      // ── Safely parse response ────────────────────────────────────────────────
       let data;
       const rawText = await response.text();
 
       try {
         data = JSON.parse(rawText);
       } catch {
-        // Server returned HTML / redirect / error page — surface raw status
         throw new Error(
           `Server error (HTTP ${response.status}). Please check your connection and try again.`
         );
@@ -221,9 +202,6 @@ const ExportDropdown = ({ showId, dateRange, reportName = 'Report' }) => {
       const fileUrl = data.data.url;
       setProgressVisible(false);
 
-      // ── Open file URL ────────────────────────────────────────────────────────
-      // On iOS the file opens in Safari; user can tap Share → Save to Files.
-      // On Android the file opens in the browser download manager.
       const canOpen = await Linking.canOpenURL(fileUrl);
       if (canOpen) {
         await Linking.openURL(fileUrl);
@@ -241,10 +219,8 @@ const ExportDropdown = ({ showId, dateRange, reportName = 'Report' }) => {
     }
   };
 
-  // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <>
-      {/* Trigger button */}
       <TouchableOpacity
         ref={buttonRef}
         onPress={openDropdown}
@@ -264,7 +240,6 @@ const ExportDropdown = ({ showId, dateRange, reportName = 'Report' }) => {
         <ChevronDownIcon />
       </TouchableOpacity>
 
-      {/* ── Format dropdown ── */}
       <Modal
         visible={dropdownVisible}
         transparent
@@ -288,7 +263,6 @@ const ExportDropdown = ({ showId, dateRange, reportName = 'Report' }) => {
               overflow: 'hidden',
             }}
           >
-            {/* PDF */}
             <TouchableOpacity
               onPress={() => onFormatPress('pdf')}
               activeOpacity={0.7}
@@ -307,7 +281,6 @@ const ExportDropdown = ({ showId, dateRange, reportName = 'Report' }) => {
               </View>
             </TouchableOpacity>
 
-            {/* PowerPoint */}
             <TouchableOpacity
               onPress={() => onFormatPress('powerpoint')}
               activeOpacity={0.7}
@@ -326,7 +299,6 @@ const ExportDropdown = ({ showId, dateRange, reportName = 'Report' }) => {
               </View>
             </TouchableOpacity>
 
-            {/* Excel — English only, no "SOON" badge */}
             <TouchableOpacity
               onPress={() => onFormatPress('excel')}
               activeOpacity={0.7}
@@ -347,7 +319,6 @@ const ExportDropdown = ({ showId, dateRange, reportName = 'Report' }) => {
         </Pressable>
       </Modal>
 
-      {/* ── Language modal (PDF & PowerPoint only) ── */}
       <Modal
         visible={langModalVisible}
         transparent
@@ -356,10 +327,7 @@ const ExportDropdown = ({ showId, dateRange, reportName = 'Report' }) => {
       >
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }}>
           <View style={{ backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 36 }}>
-            {/* Handle */}
             <View style={{ width: 40, height: 4, borderRadius: 2, backgroundColor: '#e2e8f0', alignSelf: 'center', marginBottom: 20 }} />
-
-            {/* Header */}
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
               <View>
                 <Text style={{ fontSize: 18, fontWeight: '800', color: '#1a0a1a' }}>Select Language</Text>
@@ -375,7 +343,6 @@ const ExportDropdown = ({ showId, dateRange, reportName = 'Report' }) => {
               </TouchableOpacity>
             </View>
 
-            {/* Options */}
             <LanguageOption
               lang="en" label="English" sublabel="Left-to-right layout" letter="EN"
               selected={selectedLang === 'en'} onSelect={setSelectedLang}
@@ -385,7 +352,6 @@ const ExportDropdown = ({ showId, dateRange, reportName = 'Report' }) => {
               selected={selectedLang === 'ar'} onSelect={setSelectedLang}
             />
 
-            {/* Confirm */}
             <TouchableOpacity
               onPress={onConfirmLang}
               disabled={!selectedLang}
@@ -412,7 +378,6 @@ const ExportDropdown = ({ showId, dateRange, reportName = 'Report' }) => {
         </View>
       </Modal>
 
-      {/* ── Progress modal ── */}
       <Modal visible={progressVisible} transparent animationType="fade" onRequestClose={() => {}}>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
           <View style={{ backgroundColor: '#fff', borderRadius: 24, padding: 32, alignItems: 'center', width: '100%', maxWidth: 300 }}>

@@ -15,7 +15,6 @@ export const apiRequest = async (endpoint, options = {}) => {
     },
   });
 
-  // Token expired or invalid → clear storage and go to login
   if (response.status === 401) {
     await AsyncStorage.multiRemove(['authToken', 'userData']);
     router.replace('/login');

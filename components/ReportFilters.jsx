@@ -138,7 +138,6 @@ export default function ReportFilters({ fromDate, toDate, onDateRangeChange, onC
                 </TouchableOpacity>
               </View>
               <View style={{ flexDirection: 'column' }}>
-              {/* Quick ranges as horizontal pill chips */}
               <View style={{ borderBottomWidth: 1, borderBottomColor: '#f1f5f9', paddingVertical: 8, flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 8, gap: 4 }}>
                 {QUICK_RANGES.map((range) => (
                   <TouchableOpacity key={range.label} onPress={() => applyQuickRange(range)} style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: '#f1f5f9' }}>
@@ -147,7 +146,6 @@ export default function ReportFilters({ fromDate, toDate, onDateRangeChange, onC
                 ))}
               </View>
 
-              {/* Calendar below */}
               <View style={{ padding: 12, alignItems: 'center' }}>
                 <MiniCalendar year={calYear} month={calMonth} onYearChange={setCalYear} onMonthChange={setCalMonth} fromDate={tempFrom} toDate={tempTo} onDayPress={handleDayPress} selectingFrom={selectingFrom} />
                 <Text style={{ fontSize: 11, color: '#94a3b8', textAlign: 'center', marginTop: 8 }}>{selectingFrom ? 'Select start date' : 'Select end date'}</Text>

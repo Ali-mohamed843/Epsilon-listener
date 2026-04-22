@@ -33,10 +33,7 @@ export default function CompareSelectionScreen() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      // Fetch dynamic data
       const data = await fetchAlertsData();
-      
-      // Combine and format for the UI
       const items = [
         ...data.keywordReports.map(r => ({ ...r, originalId: r.id })),
         ...data.profileReports.map(r => ({ ...r, originalId: r.id }))

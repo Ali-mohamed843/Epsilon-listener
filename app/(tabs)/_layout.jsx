@@ -63,7 +63,6 @@ export default function TabsLayout() {
         tabBarStyle,
       }}
     >
-      {/* ── Main tabs ── */}
       <Tabs.Screen
         name="index"
         options={{

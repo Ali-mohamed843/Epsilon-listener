@@ -1,5 +1,3 @@
-// components/CreateKeywordModal.jsx
-
 import React, { useState, useEffect } from 'react';
 import {
   Modal,
@@ -21,7 +19,6 @@ import { fetchUrlGroups, createKeyword } from '../api/keywordApi';
 const { width, height } = Dimensions.get('window');
 const isSmall = height < 700;
 
-// ── Icons ─────────────────────────────────────────────────────────────────────
 
 const CloseIcon = () => (
   <Svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="#6e226e" strokeWidth={2.5} strokeLinecap="round">
@@ -51,7 +48,6 @@ const CheckIcon = () => (
   </Svg>
 );
 
-// ── Platform list ─────────────────────────────────────────────────────────────
 
 const PLATFORMS = [
   { key: 'twitter',   label: 'Twitter' },
@@ -63,7 +59,6 @@ const PLATFORMS = [
   { key: 'snapchat',  label: 'Snapchat' },
 ];
 
-// ── Step indicator ────────────────────────────────────────────────────────────
 
 const StepDots = ({ current, total }) => (
   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
@@ -81,7 +76,6 @@ const StepDots = ({ current, total }) => (
   </View>
 );
 
-// ── Small reusable row: label + Switch ────────────────────────────────────────
 
 const ToggleRow = ({ label, value, onChange, disabled = false }) => (
   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#f5eef5' }}>
@@ -97,7 +91,6 @@ const ToggleRow = ({ label, value, onChange, disabled = false }) => (
   </View>
 );
 
-// ── Date input (iOS/Android friendly) ────────────────────────────────────────
 
 const DateField = ({ label, value, onChange }) => (
   <View style={{ flex: 1 }}>
@@ -121,9 +114,6 @@ const DateField = ({ label, value, onChange }) => (
   </View>
 );
 
-// ═════════════════════════════════════════════════════════════════════════════
-// STEP 1 — Basic Info
-// ═════════════════════════════════════════════════════════════════════════════
 
 const Step1 = ({ form, setForm, nameError }) => {
   const togglePlatform = (key) => {
@@ -154,7 +144,6 @@ const Step1 = ({ form, setForm, nameError }) => {
 
   return (
     <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-      {/* Name */}
       <View style={{ marginBottom: 20 }}>
         <Text style={styles.fieldLabel}>Name</Text>
         <TextInput
@@ -168,8 +157,6 @@ const Step1 = ({ form, setForm, nameError }) => {
           <Text style={{ fontSize: 11, color: '#e8365d', marginTop: 4 }}>Name Field Is Required</Text>
         ) : null}
       </View>
-
-      {/* Platforms */}
       <View style={{ marginBottom: 20 }}>
         <Text style={styles.fieldLabel}>Keyword Platforms</Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
@@ -198,7 +185,6 @@ const Step1 = ({ form, setForm, nameError }) => {
         </View>
       </View>
 
-      {/* Keywords */}
       <View style={{ marginBottom: 20 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
           <Text style={styles.fieldLabel}>Keywords</Text>
@@ -227,14 +213,12 @@ const Step1 = ({ form, setForm, nameError }) => {
         ))}
       </View>
 
-      {/* Exact Keyword toggle */}
       <ToggleRow
         label="Exact Keyword"
         value={form.exact_keyword}
         onChange={(v) => setForm((p) => ({ ...p, exact_keyword: v }))}
       />
 
-      {/* Dates */}
       <View style={{ flexDirection: 'row', gap: 12, marginTop: 20 }}>
         <DateField
           label="Start Date"
@@ -253,9 +237,6 @@ const Step1 = ({ form, setForm, nameError }) => {
   );
 };
 
-// ═════════════════════════════════════════════════════════════════════════════
-// STEP 2 — Intent & Drivers
-// ═════════════════════════════════════════════════════════════════════════════
 
 const Step2 = ({ form, setForm, urlGroups, loadingGroups }) => {
   const addIntent = () => setForm((p) => ({ ...p, intents: [...p.intents, ''] }));
@@ -278,7 +259,6 @@ const Step2 = ({ form, setForm, urlGroups, loadingGroups }) => {
 
   return (
     <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-      {/* Customize Intent toggle */}
       <ToggleRow
         label="Customize Your Intent and Drivers"
         value={form.customized_intents}
@@ -286,7 +266,6 @@ const Step2 = ({ form, setForm, urlGroups, loadingGroups }) => {
           setForm((p) => ({
             ...p,
             customized_intents: v,
-            // mutually exclusive — turn off AI when custom is on
             ai_intents: v ? false : p.ai_intents,
             intents: v && p.intents.length === 0 ? [''] : p.intents,
             drivers: v && p.drivers.length === 0 ? [''] : p.drivers,
@@ -294,10 +273,8 @@ const Step2 = ({ form, setForm, urlGroups, loadingGroups }) => {
         }}
       />
 
-      {/* Intents + Drivers inputs — shown only when customized_intents is ON */}
       {form.customized_intents && (
         <>
-          {/* Intents */}
           <View style={{ marginTop: 16, marginBottom: 12 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
               <Text style={styles.fieldLabel}>Intents</Text>
@@ -326,7 +303,6 @@ const Step2 = ({ form, setForm, urlGroups, loadingGroups }) => {
             ))}
           </View>
 
-          {/* Drivers */}
           <View style={{ marginBottom: 12 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
               <Text style={styles.fieldLabel}>Drivers</Text>
@@ -356,8 +332,6 @@ const Step2 = ({ form, setForm, urlGroups, loadingGroups }) => {
           </View>
         </>
       )}
-
-      {/* AI Intent toggle — disabled when customized_intents is ON */}
       <ToggleRow
         label="Use AI to Detect Intent and Drivers"
         value={form.ai_intents}
@@ -365,7 +339,6 @@ const Step2 = ({ form, setForm, urlGroups, loadingGroups }) => {
         disabled={form.customized_intents}
       />
 
-      {/* URL Group picker */}
       <View style={{ marginTop: 24 }}>
         <Text style={styles.fieldLabel}>Page URL Group</Text>
         {loadingGroups ? (
@@ -433,9 +406,6 @@ const Step2 = ({ form, setForm, urlGroups, loadingGroups }) => {
     </ScrollView>
   );
 };
-// ═════════════════════════════════════════════════════════════════════════════
-// STEP 3 — Advanced Settings
-// ═════════════════════════════════════════════════════════════════════════════
 
 const REFETCH_PERIODS = [
   { label: '8 Hours',  value: 8 },
@@ -450,7 +420,6 @@ const Step3 = ({ form, setForm }) => {
   const [periodOpen, setPeriodOpen] = useState(false);
   const [companyOpen, setCompanyOpen] = useState(false);
 
-  // Placeholder company list — replace with real API data if needed
   const COMPANIES = [
     { label: 'Apple',   value: 'apple' },
     { label: 'Google',  value: 'google' },
@@ -463,26 +432,22 @@ const Step3 = ({ form, setForm }) => {
 
   return (
     <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-      {/* Live Updates */}
       <ToggleRow
         label="Live Updates"
         value={form.isLiveUpdates}
         onChange={(v) => setForm((p) => ({ ...p, isLiveUpdates: v }))}
       />
 
-      {/* Refetch Engagement */}
       <ToggleRow
         label="Refetch Engagment"
         value={form.refetchEngagment}
         onChange={(v) => setForm((p) => ({ ...p, refetchEngagment: v, refetchPeriod: v ? p.refetchPeriod : null }))}
       />
 
-      {/* Period dropdown — shown only when refetchEngagment is ON */}
       {form.refetchEngagment && (
         <View style={{ marginBottom: 16 }}>
           <Text style={[styles.fieldLabel, { marginBottom: 6 }]}>Period In Hours</Text>
 
-          {/* Trigger */}
           <TouchableOpacity
             onPress={() => { setPeriodOpen((o) => !o); setCompanyOpen(false); }}
             activeOpacity={0.8}
@@ -495,13 +460,11 @@ const Step3 = ({ form, setForm }) => {
             <Text style={{ fontSize: 13.5, color: selectedPeriod ? '#1a0a1a' : '#c8b2c8' }}>
               {selectedPeriod ? selectedPeriod.label : 'null Hours'}
             </Text>
-            {/* Chevron */}
             <Svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="#9e859e" strokeWidth={2} strokeLinecap="round">
               <Polyline points={periodOpen ? '18 15 12 9 6 15' : '6 9 12 15 18 9'} />
             </Svg>
           </TouchableOpacity>
 
-          {/* Dropdown list */}
           {periodOpen && (
             <View style={{
               borderWidth: 1.5, borderColor: '#ede4ed', borderRadius: 12,
@@ -534,7 +497,6 @@ const Step3 = ({ form, setForm }) => {
         </View>
       )}
 
-      {/* Stock Market Analysis */}
       <ToggleRow
         label="Stock Market Analysis"
         value={form.stock_analysis}
@@ -547,10 +509,8 @@ const Step3 = ({ form, setForm }) => {
         }))}
       />
 
-      {/* Stock fields — shown only when stock_analysis is ON */}
       {form.stock_analysis && (
         <View style={{ marginTop: 8, marginBottom: 16 }}>
-          {/* Company dropdown */}
           <Text style={[styles.fieldLabel, { marginBottom: 6 }]}>Company</Text>
           <TouchableOpacity
             onPress={() => { setCompanyOpen((o) => !o); setPeriodOpen(false); }}
@@ -599,7 +559,6 @@ const Step3 = ({ form, setForm }) => {
             </View>
           )}
 
-          {/* Stock date range */}
           <View style={{ flexDirection: 'row', gap: 12, marginTop: 4 }}>
             <DateField
               label="Start Date"
@@ -619,9 +578,6 @@ const Step3 = ({ form, setForm }) => {
     </ScrollView>
   );
 };
-// ═════════════════════════════════════════════════════════════════════════════
-// MAIN MODAL
-// ═════════════════════════════════════════════════════════════════════════════
 
 const INITIAL_FORM = {
   name: '',
@@ -650,7 +606,6 @@ export default function CreateKeywordModal({ visible, onClose, onCreated }) {
   const [loadingGroups, setLoadingGroups] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Load URL groups when modal opens
   useEffect(() => {
     if (visible) {
       setLoadingGroups(true);
@@ -680,8 +635,6 @@ export default function CreateKeywordModal({ visible, onClose, onCreated }) {
 
   const handleSave = async () => {
     setSaving(true);
-
-    // Build keywords array — filter empty strings
     const keywordsArr = form.keywords.map((k) => k.trim()).filter(Boolean);
 
     const payload = {
@@ -741,16 +694,13 @@ export default function CreateKeywordModal({ visible, onClose, onCreated }) {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        {/* Backdrop */}
         <TouchableOpacity
           activeOpacity={1}
           onPress={resetAndClose}
           style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.45)' }}
         />
 
-        {/* Sheet */}
         <View style={styles.sheet}>
-          {/* Header */}
           <View style={styles.sheetHeader}>
             <View>
               <Text style={styles.sheetTitle}>{stepTitles[step]}</Text>
@@ -761,14 +711,12 @@ export default function CreateKeywordModal({ visible, onClose, onCreated }) {
             </TouchableOpacity>
           </View>
 
-          {/* Content */}
           <View style={{ flex: 1, paddingHorizontal: 20 }}>
             {step === 0 && <Step1 form={form} setForm={setForm} nameError={nameError} />}
             {step === 1 && <Step2 form={form} setForm={setForm} urlGroups={urlGroups} loadingGroups={loadingGroups} />}
             {step === 2 && <Step3 form={form} setForm={setForm} />}
           </View>
 
-          {/* Footer buttons */}
           <View style={styles.footer}>
             {step > 0 && (
               <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
@@ -802,7 +750,6 @@ export default function CreateKeywordModal({ visible, onClose, onCreated }) {
   );
 }
 
-// ── Styles ────────────────────────────────────────────────────────────────────
 
 const styles = {
   sheet: {

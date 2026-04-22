@@ -53,7 +53,6 @@ const formatShowForUI = (show) => {
   };
 };
 
-// ── Icons ─────────────────────────────────────────────────────────────────────
 const PlusIcon = ({ size = 14, color = '#6e226e' }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.5} strokeLinecap="round">
     <Line x1={12} y1={5} x2={12} y2={19} /><Line x1={5} y1={12} x2={19} y2={12} />
@@ -113,7 +112,6 @@ const LogoIcon = ({ size = 20 }) => (
   </Svg>
 );
 
-// ── CARD ──────────────────────────────────────────────────────────────────────
 const KeywordCard = ({ keyword, isSmallDevice, onEdit, onUpdate, onDelete, isUpdating, isDeleting }) => {
   const [isChecked, setIsChecked] = useState(false);
   const router = useRouter();
@@ -234,7 +232,6 @@ const KeywordCard = ({ keyword, isSmallDevice, onEdit, onUpdate, onDelete, isUpd
   );
 };
 
-// ── MAIN SCREEN ───────────────────────────────────────────────────────────────
 export default function KeywordsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -259,10 +256,9 @@ export default function KeywordsScreen() {
   setIsLoading(true);
   setError('');
 
-  // Fetch both list and total count in parallel
   const [listResult, homeData] = await Promise.allSettled([
     fetchKeywords(1, PAGE_SIZE, searchQuery),
-    fetchHomeData({ perPage: 1 }),  // perPage:1 is enough, we only need pageInfo
+    fetchHomeData({ perPage: 1 }),  
   ]);
 
   if (listResult.status === 'fulfilled' && listResult.value.success) {
@@ -286,7 +282,6 @@ export default function KeywordsScreen() {
   }, [loadKeywords])
 );
 
-  // ── Load next page ────────────────────────────────────────────────────────
   const loadMore = useCallback(async () => {
     if (isLoadingMore || !hasMore || isLoading) return;
     setIsLoadingMore(true);
@@ -300,7 +295,6 @@ export default function KeywordsScreen() {
     setIsLoadingMore(false);
   }, [isLoadingMore, hasMore, isLoading, page, searchQuery]);
 
-  // ── Pull-to-refresh ───────────────────────────────────────────────────────
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     const result = await fetchKeywords(1, PAGE_SIZE, searchQuery);
@@ -312,7 +306,6 @@ export default function KeywordsScreen() {
     setRefreshing(false);
   }, [searchQuery]);
 
-  // ── Actions ───────────────────────────────────────────────────────────────
   const handleDelete = (id) => {
     Alert.alert('Delete Keyword', 'Are you sure you want to delete this keyword?', [
       { text: 'Cancel', style: 'cancel' },
@@ -352,7 +345,6 @@ export default function KeywordsScreen() {
     kw.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // ── Scroll handler ────────────────────────────────────────────────────────
   const handleScroll = ({ nativeEvent }) => {
     const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
     const nearBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 200;
@@ -363,7 +355,6 @@ export default function KeywordsScreen() {
     <View className="flex-1 bg-surface2">
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      {/* ── Header ── */}
       <View
         className="bg-primary overflow-hidden"
         style={{ paddingTop: insets.top || StatusBar.currentHeight || 0, paddingBottom: isSmallDevice ? 20 : 24, paddingHorizontal: width * 0.06 }}
@@ -395,7 +386,6 @@ export default function KeywordsScreen() {
         </View>
       </View>
 
-      {/* ── Search ── */}
       <View className="flex-row" style={{ paddingHorizontal: width * 0.05, paddingTop: 16, paddingBottom: 12, gap: 10 }}>
         <View className="flex-1 flex-row items-center bg-white border border-border" style={{ height: searchHeight, borderRadius: 14, paddingHorizontal: 14, gap: 8 }}>
           <SearchIcon />
@@ -410,7 +400,6 @@ export default function KeywordsScreen() {
         </View>
       </View>
 
-      {/* ── Count ── */}
       <View style={{ paddingHorizontal: width * 0.05, paddingBottom: 10 }}>
         <Text className="text-muted" style={{ fontSize: 12.5 }}>
           <Text className="text-primary font-bold">
@@ -419,7 +408,6 @@ export default function KeywordsScreen() {
         </Text>
       </View>
 
-      {/* ── List ── */}
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingHorizontal: width * 0.05, paddingBottom: 20, flexGrow: isLoading ? 1 : 0 }}
@@ -461,7 +449,6 @@ export default function KeywordsScreen() {
               />
             ))}
 
-            {/* ── Footer ── */}
             {isLoadingMore && (
               <View style={{ paddingVertical: 16, alignItems: 'center' }}>
                 <ActivityIndicator size="small" color="#6e226e" />

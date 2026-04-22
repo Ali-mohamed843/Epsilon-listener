@@ -73,7 +73,6 @@ const ToggleRow = ({ label, value, onChange, disabled = false }) => (
   </View>
 );
 
-// ── Step 1: Keyword Details + Dates ──────────────────────────────────────────
 export function Step1({
   keywordName, setKeywordName,
   selectedPlatforms = [], togglePlatform,
@@ -91,7 +90,6 @@ export function Step1({
 
   return (
     <View>
-      {/* Name */}
       <Text style={{ fontSize: 12, fontWeight: '700', color: '#9e859e', letterSpacing: 1, marginBottom: 8, marginTop: 20, textTransform: 'uppercase' }}>
         Keyword Name
       </Text>
@@ -107,7 +105,6 @@ export function Step1({
         placeholderTextColor="#c8b2c8"
       />
 
-      {/* Platforms */}
       <Text style={{ fontSize: 12, fontWeight: '700', color: '#9e859e', letterSpacing: 1, marginBottom: 8, marginTop: 20, textTransform: 'uppercase' }}>
         Keyword Platforms
       </Text>
@@ -122,7 +119,6 @@ export function Step1({
         ))}
       </View>
 
-      {/* Keywords */}
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 20, marginBottom: 10 }}>
         <Text style={{ fontSize: 12, fontWeight: '700', color: '#9e859e', letterSpacing: 1, textTransform: 'uppercase' }}>
           Keywords
@@ -144,7 +140,6 @@ export function Step1({
         />
       ))}
 
-      {/* Dates */}
       <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 24, marginBottom: 18, gap: 8 }}>
         <CalendarIcon size={18} color="#6e226e" />
         <Text style={{ fontSize: 16, fontWeight: '800', color: '#1a0a1a', letterSpacing: -0.3 }}>
@@ -173,7 +168,6 @@ export function Step1({
   );
 }
 
-// ── Step 2: URL Groups ────────────────────────────────────────────────────────
 export function Step2({ urlGroup, setUrlGroup, urlGroups = [], isSmallDevice }) {
   const [showDropdown, setShowDropdown] = useState(false);
   const [pageUrls, setPageUrls] = useState([]);
@@ -288,7 +282,6 @@ export function Step2({ urlGroup, setUrlGroup, urlGroups = [], isSmallDevice }) 
         {urlGroup ? `${urlGroup.name} (${pageUrls.length} URLs)` : 'Choose a URL group to auto-fill page URLs'}
       </Text>
 
-      {/* URLs list */}
       {urlGroup && (
         <View>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -331,7 +324,6 @@ export function Step2({ urlGroup, setUrlGroup, urlGroups = [], isSmallDevice }) 
   );
 }
 
-// ── Step 3: Advanced Settings ─────────────────────────────────────────────────
 const REFETCH_PERIODS = [
   { label: '8 Hours',  value: 8  },
   { label: '9 Hours',  value: 9  },
@@ -434,8 +426,6 @@ const selectedCompany = stockCompany
 
   return (
     <View style={{ paddingBottom: 16 }}>
-
-      {/* ── Customize Intent ── */}
       <ToggleRow
         label="Customize Your Intent and Drivers"
         value={customizedIntents}
@@ -451,7 +441,6 @@ const selectedCompany = stockCompany
 
       {customizedIntents && (
         <>
-          {/* Intents */}
           <View style={{ marginTop: 14, marginBottom: 8 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
               <Text style={{ fontSize: 13, fontWeight: '600', color: '#555' }}>Intents</Text>
@@ -478,7 +467,6 @@ const selectedCompany = stockCompany
             ))}
           </View>
 
-          {/* Drivers */}
           <View style={{ marginBottom: 8 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
               <Text style={{ fontSize: 13, fontWeight: '600', color: '#555' }}>Drivers</Text>
@@ -507,7 +495,6 @@ const selectedCompany = stockCompany
         </>
       )}
 
-      {/* ── AI Intent ── */}
       <ToggleRow
         label="Use AI to Detect Intent and Drivers"
         value={aiIntents}
@@ -515,14 +502,12 @@ const selectedCompany = stockCompany
         disabled={customizedIntents}
       />
 
-      {/* ── Live Updates ── */}
       <ToggleRow
         label="Live Updates"
         value={isLiveUpdates}
         onChange={setIsLiveUpdates}
       />
 
-      {/* ── Refetch Engagement ── */}
       <ToggleRow
         label="Refetch Engagment"
         value={refetchEngagment}
@@ -573,7 +558,6 @@ const selectedCompany = stockCompany
         </View>
       )}
 
-      {/* ── Stock Market Analysis ── */}
       <ToggleRow
         label="Stock Market Analysis"
         value={stockAnalysis}
@@ -585,105 +569,100 @@ const selectedCompany = stockCompany
 
       {stockAnalysis && (
         <View style={{ marginTop: 8, marginBottom: 16 }}>
-         {/* Company */}
-<Text style={{ fontSize: 12, fontWeight: '600', color: '#9e859e', marginBottom: 6 }}>Company</Text>
-<TouchableOpacity
-  onPress={() => { setCompanyOpen((o) => !o); setPeriodOpen(false); }}
-  style={{
-    height: 48, borderWidth: 1.5,
-    borderColor: companyOpen ? '#6e226e' : '#ede4ed',
-    borderRadius: 12, paddingHorizontal: 14,
-    flexDirection: 'row', alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#faf7fa', marginBottom: 4,
-  }}
-  activeOpacity={0.8}
->
-  <Text style={{ fontSize: 13.5, color: selectedCompany ? '#1a0a1a' : '#c8b2c8', flex: 1 }} numberOfLines={1}>
-    {selectedCompany ? selectedCompany.label : 'Select...'}
-  </Text>
-  <ChevronDownIcon color={companyOpen ? '#6e226e' : '#9e859e'} />
-</TouchableOpacity>
-
-{companyOpen && (
-  <View style={{
-    borderWidth: 1.5, borderColor: '#ede4ed', borderRadius: 12,
-    backgroundColor: '#fff', marginBottom: 12,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08, shadowRadius: 12, elevation: 6,
-    maxHeight: 280,
-  }}>
-    {/* Search input */}
-    <View style={{
-      flexDirection: 'row', alignItems: 'center',
-      borderBottomWidth: 1, borderBottomColor: '#f0e8f0',
-      paddingHorizontal: 12, paddingVertical: 8, gap: 8,
-    }}>
-      <TextInput
-        value={companySearch}
-        onChangeText={handleCompanySearch}
-        placeholder="Search company..."
-        placeholderTextColor="#c8b2c8"
-        style={{ flex: 1, fontSize: 13.5, color: '#1a0a1a', paddingVertical: 4 }}
-        autoFocus
-      />
-      {loadingCompanies && <ActivityIndicator size="small" color="#6e226e" />}
-    </View>
-
-    {/* List */}
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      onScroll={({ nativeEvent }) => {
-        const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
-        if (layoutMeasurement.height + contentOffset.y >= contentSize.height - 40) {
-          handleLoadMoreCompanies();
-        }
-      }}
-      scrollEventThrottle={200}
-    >
-      {companies.length === 0 && !loadingCompanies ? (
-        <View style={{ padding: 16, alignItems: 'center' }}>
-          <Text style={{ color: '#9e859e', fontSize: 13 }}>No companies found</Text>
-        </View>
-      ) : (
-        companies.map((c, i) => {
-          const selected = stockCompany === c.value;
-          return (
+            <Text style={{ fontSize: 12, fontWeight: '600', color: '#9e859e', marginBottom: 6 }}>Company</Text>
             <TouchableOpacity
-              key={c.value}
-              onPress={() => {
-                setStockCompany(c.value);
-                setCompanySearch(c.label);
-                setCompanyOpen(false);
-              }}
+              onPress={() => { setCompanyOpen((o) => !o); setPeriodOpen(false); }}
               style={{
-                paddingHorizontal: 16, paddingVertical: 13,
-                backgroundColor: selected ? '#f5edf5' : '#fff',
-                borderBottomWidth: i < companies.length - 1 ? 1 : 0,
-                borderBottomColor: '#f5eef5',
+                height: 48, borderWidth: 1.5,
+                borderColor: companyOpen ? '#6e226e' : '#ede4ed',
+                borderRadius: 12, paddingHorizontal: 14,
+                flexDirection: 'row', alignItems: 'center',
+                justifyContent: 'space-between',
+                backgroundColor: '#faf7fa', marginBottom: 4,
               }}
+              activeOpacity={0.8}
             >
-              <Text style={{
-                fontSize: 14,
-                color: selected ? '#6e226e' : '#1a0a1a',
-                fontWeight: selected ? '700' : '400',
-              }}>
-                {c.label}
+              <Text style={{ fontSize: 13.5, color: selectedCompany ? '#1a0a1a' : '#c8b2c8', flex: 1 }} numberOfLines={1}>
+                {selectedCompany ? selectedCompany.label : 'Select...'}
               </Text>
+              <ChevronDownIcon color={companyOpen ? '#6e226e' : '#9e859e'} />
             </TouchableOpacity>
-          );
-        })
-      )}
-      {loadingCompanies && companies.length > 0 && (
-        <View style={{ paddingVertical: 12, alignItems: 'center' }}>
-          <ActivityIndicator size="small" color="#6e226e" />
-        </View>
-      )}
-    </ScrollView>
-  </View>
-)}
 
-          {/* Stock dates */}
+            {companyOpen && (
+              <View style={{
+                borderWidth: 1.5, borderColor: '#ede4ed', borderRadius: 12,
+                backgroundColor: '#fff', marginBottom: 12,
+                shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.08, shadowRadius: 12, elevation: 6,
+                maxHeight: 280,
+              }}>
+                <View style={{
+                  flexDirection: 'row', alignItems: 'center',
+                  borderBottomWidth: 1, borderBottomColor: '#f0e8f0',
+                  paddingHorizontal: 12, paddingVertical: 8, gap: 8,
+                }}>
+                  <TextInput
+                    value={companySearch}
+                    onChangeText={handleCompanySearch}
+                    placeholder="Search company..."
+                    placeholderTextColor="#c8b2c8"
+                    style={{ flex: 1, fontSize: 13.5, color: '#1a0a1a', paddingVertical: 4 }}
+                    autoFocus
+                  />
+                  {loadingCompanies && <ActivityIndicator size="small" color="#6e226e" />}
+                </View>
+
+                <ScrollView
+                  showsVerticalScrollIndicator={false}
+                  onScroll={({ nativeEvent }) => {
+                    const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+                    if (layoutMeasurement.height + contentOffset.y >= contentSize.height - 40) {
+                      handleLoadMoreCompanies();
+                    }
+                  }}
+                  scrollEventThrottle={200}
+                >
+                  {companies.length === 0 && !loadingCompanies ? (
+                    <View style={{ padding: 16, alignItems: 'center' }}>
+                      <Text style={{ color: '#9e859e', fontSize: 13 }}>No companies found</Text>
+                    </View>
+                  ) : (
+                    companies.map((c, i) => {
+                      const selected = stockCompany === c.value;
+                      return (
+                        <TouchableOpacity
+                          key={c.value}
+                          onPress={() => {
+                            setStockCompany(c.value);
+                            setCompanySearch(c.label);
+                            setCompanyOpen(false);
+                          }}
+                          style={{
+                            paddingHorizontal: 16, paddingVertical: 13,
+                            backgroundColor: selected ? '#f5edf5' : '#fff',
+                            borderBottomWidth: i < companies.length - 1 ? 1 : 0,
+                            borderBottomColor: '#f5eef5',
+                          }}
+                        >
+                          <Text style={{
+                            fontSize: 14,
+                            color: selected ? '#6e226e' : '#1a0a1a',
+                            fontWeight: selected ? '700' : '400',
+                          }}>
+                            {c.label}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })
+                  )}
+                  {loadingCompanies && companies.length > 0 && (
+                    <View style={{ paddingVertical: 12, alignItems: 'center' }}>
+                      <ActivityIndicator size="small" color="#6e226e" />
+                    </View>
+                  )}
+                </ScrollView>
+              </View>
+            )}
           <DatePickerCard
             title="Start Date"
             subtitle="Stock analysis start"

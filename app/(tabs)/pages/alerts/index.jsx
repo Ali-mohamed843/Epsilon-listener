@@ -41,11 +41,8 @@ export default function AlertsScreen() {
     setIsLoading(true);
     setError('');
     try {
-      // 1. Fetch dynamic data from API
       const dataPackage = await fetchAlertsData();
-      // 2. Format for AI
       const formattedData = formatDataForAI(dataPackage);
-      // 3. Generate alerts
       if (formattedData && formattedData.length > 0) {
         const generatedAlerts = await generateAlerts(formattedData);
         setAlerts(generatedAlerts || []);
@@ -85,20 +82,14 @@ export default function AlertsScreen() {
   };
 
   const handleChatMessage = useCallback(async (chatHistory, userMessage) => {
-    // For chat, we can just summarize current alerts + data
     const dataPackage = await fetchAlertsData();
-    const formattedData = formatDataForAI(dataPackage);
-    
+    const formattedData = formatDataForAI(dataPackage);    
     return chatWithReportContext(formattedData, chatHistory, userMessage);
   }, []);
 
-  // Simple chat fallback using current alerts
   const chatWithReportContext = async (dataText, history, msg) => {
     const historyText = history.map(m => `${m.role}: ${m.text}`).join('\n');
     const prompt = `You are an AI assistant for "Epsilon Listener". Analyze this data:\n\n${dataText}\n\n${historyText ? `History:\n${historyText}\n` : ''}User: ${msg}`;
-    // In a real app, you'd send this to Gemini directly. 
-    // Reusing generateReportSummary logic for chat is complex, 
-    // so here we just return a placeholder or you'd add a chat endpoint.
     return "I can see your alerts are based on current live data. " + msg; 
   };
 

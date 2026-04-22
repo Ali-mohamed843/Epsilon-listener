@@ -26,7 +26,6 @@ import {
 
 const { width, height } = Dimensions.get('window');
 
-/* ───────────────────────── Reusable helpers ───────────────────────── */
 
 const ToggleSwitch = ({ value, onToggle }) => {
   const anim = useRef(new Animated.Value(value ? 1 : 0)).current;
@@ -65,7 +64,6 @@ const ToggleSwitch = ({ value, onToggle }) => {
   );
 };
 
-/* ───────────── Compact date picker (side-by-side layout) ──────────── */
 
 function formatDateISO(date) {
   const y = date.getFullYear();
@@ -156,7 +154,6 @@ const CompactDateInput = ({ label, value, onChange, isSmallDevice }) => {
   );
 };
 
-/* ─────────────────────── Keyword row ─────────────────────── */
 
 const KeywordRow = ({ value, onChange, onDelete, isFirst, isSmallDevice }) => (
   <View className="flex-row items-center" style={{ marginBottom: 8, gap: 8 }}>
@@ -171,7 +168,6 @@ const KeywordRow = ({ value, onChange, onDelete, isFirst, isSmallDevice }) => (
   </View>
 );
 
-/* ─────────────────────── Toggle row ─────────────────────── */
 
 const ToggleRow = ({ iconBg, iconComponent, title, subtitle, value, onToggle, borderBottom = true }) => (
   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 15, paddingHorizontal: 16, borderBottomWidth: borderBottom ? 1 : 0, borderBottomColor: '#ede4ed' }}>
@@ -186,9 +182,6 @@ const ToggleRow = ({ iconBg, iconComponent, title, subtitle, value, onToggle, bo
   </View>
 );
 
-/* ═══════════════════════════════════════════════════════════════
-   STEP 1 — Profile Details
-   ═══════════════════════════════════════════════════════════════ */
 
 export function Step1({
   profileName, setProfileName, keywords = [], addKeyword, updateKeyword, deleteKeyword,
@@ -233,9 +226,6 @@ export function Step1({
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   STEP 2 — Settings
-   ═══════════════════════════════════════════════════════════════ */
 
 const PERIOD_OPTIONS = [
   { label: 'Every 6 Hours', value: '6' },
